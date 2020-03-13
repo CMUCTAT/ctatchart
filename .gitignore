@@ -11,3 +11,5 @@ node_modules/
 # parcel-bundler
 .cache
 .parcel-cache
+dist/
+
