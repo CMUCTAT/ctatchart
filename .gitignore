@@ -1,0 +1,13 @@
+# Editor backups
+*~
+
+# NPM
+node_modules/
+
+# dotenv
+.env
+.env.test
+
+# parcel-bundler
+.cache
+.parcel-cache

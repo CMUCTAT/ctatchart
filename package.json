@@ -1,0 +1,41 @@
+{
+  "name": "ctatchart",
+  "version": "1.0.0",
+  "description": "CTAT component for working with two dimensional charts.",
+  "main": "CTATChart.js",
+  "scripts": {
+    "start": "parcel serve demo/*.html",
+    "build": "parcel build demo/*.html --public-url ./",
+    "demo": "parcel demo/index.html",
+    "lint": "eslint CTATChart.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gitlab.com/RingenbergCTAT/ctatchart.git"
+  },
+  "keywords": [
+    "CTAT",
+    "chart",
+    "educational"
+  ],
+  "author": {
+    "name": "Michael Ringenberg",
+    "email": "ringenberg@cmu.edu",
+    "url": "https://www.andrew.cmu.edu/home/mringenb/"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://gitlab.com/RingenbergCTAT/ctatchart/issues"
+  },
+  "homepage": "https://gitlab.com/RingenbergCTAT/ctatchart#readme",
+  "dependencies": {
+    "chart.js": "^2.9.3",
+    "ctat": "file:../HTML5",
+    "jquery": "^3.4.1"
+  },
+  "devDependencies": {
+    "eslint": "^6.8.0",
+    "parcel": "^1.12.4"
+  }
+}

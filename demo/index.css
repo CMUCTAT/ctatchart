@@ -1,0 +1,38 @@
+/* Area containing the CTAT Hint components */
+#hint-box {
+    position: fixed;
+    bottom: 10px;
+    background-color: cornsilk;
+    border: 1px solid grey;
+    border-radius: 5px;
+    padding: 5px;
+    display: flex;
+    justify-content: space-around;
+    margin: 0 auto;
+    width: 500px;
+}
+/* Fix spacing on CTAT buttons/hint window */
+.CTATHintWindow--hint-content { padding-top: 5px; }
+.CTATHintWindow {
+    display: inline-flex;
+    width: 100%;
+}
+.CTATHintButton {
+    margin: 0 5px 5px 5px;
+}
+.CTATDoneButton {
+    margin: 0 5px 0 5px
+}
+.CTATSubmitButton {
+    margin-bottom: 10px;
+    margin-left: 15px;
+    margin-top: 18px;
+}
+.CTATSubmitButton>button.CTAT--correct::after {
+    color: limegreen;
+    content: " \2713";
+}
+.CTATSubmitButton>button.CTAT--incorrect::after {
+    color: red;
+    content: " \2717";
+}
