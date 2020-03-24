@@ -15,6 +15,18 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
 
   get chart() { return this._chart; }
+  get _xScale() {
+    return this._chart.data.datasets.length ? this._chart.scales[this._chart.getDatasetMeta(0).xAxisID] : null;
+  }
+  get _yScale() {
+    return this._chart.scales[this._chart.getDatasetMeta(0).yAxisID];
+  }
+  getValueForPixel(x, y) {
+    return {
+      x: this._xScale.getValueForPixel(x),
+      y: this._yScale.getValueForPixel(y)
+    };
+  }
 
   _init() {
     this.setInitialized(true);
@@ -27,10 +39,36 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
         datasets: [{
           label: 'Dataset',
           data: [
-            { x: 0, y: 0 },
             { x: 5, y: 5 }
           ]
         }]
+      },
+      options: {
+        legend: {
+          display: false
+        },
+        onClick: (evt, elements) => {
+          const point = this.getValueForPixel(evt.offsetX, evt.offsetY);
+          console.log(point);
+          if (elements.length ==0 &&
+              point.x > this._xScale.min && point.x < this._xScale.max &&
+              point.y > this._yScale.min && point.y < this._yScale.max) {
+            console.log('added');
+            this.addPoint(point.x, point.y);
+          }
+        },
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }],
+          xAxes: [{
+            ticks: {
+              beginAtZero: true
+            }
+          }]
+        }
       }
     });
   }
