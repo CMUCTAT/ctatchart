@@ -3,7 +3,7 @@
  */
 /** @module CTATChart */
 /** @requires module: cdn.ctat.cmu.edu/latest/ctat.min.js */
-/*global CTAT CTATGlobalFunctions:true*/
+/*global CTAT CTATGlobalFunctions CTATSAI CTATConfiguration:true*/
 import Chart from 'chart.js';
 
 /**
@@ -66,12 +66,12 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     }
   }
   /**
-   * @param value: number - an x axis value 
+   * @param value: number - an x axis value
    * @returns : number - the value of the closest x tickmark to value.
    */
   closestXtick(value) { return closest(this._xScale.ticks, value); }
   /**
-   * @param value: number - an y axis value 
+   * @param value: number - an y axis value
    * @returns : number - the value of the closest y tickmark to value.
    */
   closestYtick(value) { return closest(this._yScale.ticks, value); }
@@ -176,7 +176,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.chart.update();
     }
   }
-      
+
   setMinimumY(value) {
     const vn = Number(value);
     if (value === null || value === '' || isNaN(vn)) {
@@ -195,7 +195,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.chart.update();
     }
   }
-  
+
   setMaximumX(value) {
     const vn = Number(value);
     if (value === null || value === '' || isNaN(vn)) {
@@ -252,7 +252,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.chart.update();
     }
   }
-      
+
   setStepY(value) {
     const vn = Number(value);
     if (value === null || value === '' || isNaN(vn)) {
@@ -271,7 +271,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.chart.update();
     }
   }
-      
+
   _init() {
     this.setInitialized(true);
     const graph_area = this.getDivWrap();
@@ -296,7 +296,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
             elements.filter(el => el._type == 'point')
               .map(ele => ele._chart.data.datasets[ele._datasetIndex].data[ele._index])
               .forEach(point => this.removePoint(point.x, point.y));
-            
+
             this.chart.update();
           } else if (this.isPoint(point.x, point.y)) {
             this.removePoint(point.x, point.y);
