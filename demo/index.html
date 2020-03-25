@@ -17,8 +17,25 @@
 	     src="https://cdn.rawgit.com/CMUCTAT/CTAT/latest/Examples/skindata/CTAT_Banner.svg"></a>
     </header>
     <section>
-      <div style="position: relative; height: 400px; width: 400px">
-        <canvas id="chart1" class="CTATChart" aria-label="Two dimension data chart" role="img">Your browser does not support the canvas element.</canvas>
+      <div style="position: relative; height: 200px; width: 400px">
+        <canvas id="chart1" class="CTATChart"
+                data-ctat-ctrl-minimum-x="minx"
+                data-ctat-ctrl-maximum-x="maxx"
+                data-ctat-ctrl-step-x="stepx"
+                data-ctat-ctrl-minimum-y="miny"
+                data-ctat-ctrl-maximum-y="maxy"
+                data-ctat-ctrl-step-y="stepy"
+                aria-label="Two dimension data chart"
+                role="img">Your browser does not support the canvas element.
+        </canvas>
+      </div>
+      <div style="display: flex; flex-direction: column;">
+      <div><span>X Minimum:</span><div id="minx" class="CTATNumericStepper" data-ctat-tutor="false"></div></div>
+      <div><span>X Maximum:</span><div id="maxx" class="CTATNumericStepper" data-ctat-tutor="false"></div></div>
+      <div><span>X Scale:</span><div id="stepx" class="CTATNumericStepper" data-ctat-tutor="false"></div></div>
+      <div><span>Y Minimum:</span><div id="miny" class="CTATNumericStepper" data-ctat-tutor="false"></div></div>
+      <div><span>Y Maximum:</span><div id="maxy" class="CTATNumericStepper" data-ctat-tutor="false"></div></div>
+      <div><span>Y Scale:</span><div id="stepy" class="CTATNumericStepper" data-ctat-tutor="false"></div></div>
       </div>
     </section>
     <footer id="hint-box">

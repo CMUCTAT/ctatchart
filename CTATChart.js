@@ -18,6 +18,19 @@ function closest(arr, value) {
       (Math.abs(cur - value) < Math.abs(prev - value) ? cur : prev));
 }
 
+function controller_name(aComponent) {
+  if (aComponent instanceof CTAT.Component.Base.Tutorable) {
+    return aComponent.getName();
+  } else if (aComponent instanceof CTATSAI) {
+    return aComponent.getSelection();
+  } else if (aComponent instanceof String) {
+    return aComponent;
+  } else if (aComponent instanceof Element) {
+    return aComponent.id;
+  }
+  return null;
+}
+
 export default class CTATChart extends CTAT.Component.Base.Tutorable {
   constructor () {
     super("CTATChart", "TwoDimensionChart");
@@ -79,36 +92,64 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     }
     return def;
   }
-    
+  getDataController(key) {
+    const ctrls = this.getDivWrap().getAttribute(key);
+    if (ctrls) { return ctrls.split(/\s*[;,]\s*/).map(c=>c.trim()); }
+    return [];
+  }
+
+  get dataCtrlMinimumX() {
+    return this.getDataController('data-ctat-ctrl-minimum-x');
+  }
   get dataMinimumX() {
     return this.getDataValue('data-ctat-minimum-x', 0);
   }
-  set dataMinX(val) {
+  set dataMinimumX(val) {
     this.getDivWrap().setAttribute('data-ctat-minimum-x', `${val}`);
+  }
+
+  get dataCtrlMinimumY() {
+    return this.getDataController('data-ctat-ctrl-minimum-y');
   }
   get dataMinimumY() {
     return this.getDataValue('data-ctat-minimum-y', 0);
   }
-  set dataMinY(val) {
+  set dataMinimumY(val) {
     this.getDivWrap().setAttribute('data-ctat-minimum-y', `${val}`);
+  }
+
+  get dataCtrlMaximumX() {
+    return this.getDataController('data-ctat-ctrl-maximum-x');
   }
   get dataMaximumX() {
     return this.getDataValue('data-ctat-maximum-x', 10);
   }
-  set dataMaxX(val) {
+  set dataMaximumX(val) {
     this.getDivWrap().setAttribute('data-ctat-maximum-x', `${val}`);
+  }
+
+  get dataCtrlMaximumY() {
+    return this.getDataController('data-ctat-ctrl-maximum-y');
   }
   get dataMaximumY() {
     return this.getDataValue('data-ctat-maximum-y', 10);
   }
-  set dataMaxY(val) {
+  set dataMaximumY(val) {
     this.getDivWrap().setAttribute('data-ctat-maximum-y', `${val}`);
+  }
+
+  get dataCtrlStepX() {
+    return this.getDataController('data-ctat-ctrl-step-x');
   }
   get dataStepX() {
     return this.getDataValue('data-ctat-step-x', 1);
   }
   set dataStepX(val) {
     this.getDivWrap().setAttribute('data-ctat-step-x', `${val}`);
+  }
+
+  get dataCtrlStepY() {
+    return this.getDataController('data-ctat-ctrl-step-y');
   }
   get dataStepY() {
     return this.getDataValue('data-ctat-step-y', 1);
@@ -119,7 +160,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
 
   setMinimumX(value) {
     const vn = Number(value);
-    if (!value || isNaN(vn)) {
+    if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad minimum x value: ${value}`);
     } else {
       this.chart.options.scales.xAxes.forEach(axis => axis.ticks.min = vn);
@@ -128,7 +169,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
   adjustMinimumX(value) {
     const vn = Number(value);
-    if (!value || isNaN(vn)) {
+    if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad minimum adjust x value: ${value}`);
     } else {
       this.chart.options.scales.xAxes.forEach(axis => axis.ticks.min += vn);
@@ -138,7 +179,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       
   setMinimumY(value) {
     const vn = Number(value);
-    if (!value || isNaN(vn)) {
+    if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad minimum y value: ${value}`);
     } else {
       this.chart.options.scales.yAxes.forEach(axis => axis.ticks.min = vn);
@@ -147,7 +188,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
   adjustMinimumY(value) {
     const vn = Number(value);
-    if (!value || isNaN(vn)) {
+    if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad minimum adjust y value: ${value}`);
     } else {
       this.chart.options.scales.yAxes.forEach(axis => axis.ticks.min += vn);
@@ -157,7 +198,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   
   setMaximumX(value) {
     const vn = Number(value);
-    if (!value || isNaN(vn)) {
+    if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad maximum x value: ${value}`);
     } else {
       this.chart.options.scales.xAxes.forEach(axis => axis.ticks.max = vn);
@@ -166,7 +207,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
   adjustMaximumX(value) {
     const vn = Number(value);
-    if (!value || isNaN(vn)) {
+    if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad maximum adjust x value: ${value}`);
     } else {
       this.chart.options.scales.xAxes.forEach(axis => axis.ticks.max += vn);
@@ -176,7 +217,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
 
   setMaximumY(value) {
     const vn = Number(value);
-    if (!value || isNaN(vn)) {
+    if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad maximum y value: ${value}`);
     } else {
       this.chart.options.scales.yAxes.forEach(axis => axis.ticks.max = vn);
@@ -185,7 +226,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
   adjustMaximumY(value) {
     const vn = Number(value);
-    if (!value || isNaN(vn)) {
+    if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad maximum adjust y value: ${value}`);
     } else {
       this.chart.options.scales.yAxes.forEach(axis => axis.ticks.max += vn);
@@ -195,7 +236,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
 
   setStepX(value) {
     const vn = Number(value);
-    if (!value || isNaN(vn)) {
+    if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad step x value: ${value}`);
     } else {
       this.chart.options.scales.xAxes.forEach(axis => axis.ticks.stepSize = vn);
@@ -204,7 +245,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
   adjustStepX(value) {
     const vn = Number(value);
-    if (!value || isNaN(vn)) {
+    if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad step delta x value: ${value}`);
     } else {
       this.chart.options.scales.xAxes.forEach(axis => axis.ticks.stepSize += vn);
@@ -214,7 +255,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       
   setStepY(value) {
     const vn = Number(value);
-    if (!value || isNaN(vn)) {
+    if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad step x value: ${value}`);
     } else {
       this.chart.options.scales.yAxes.forEach(axis => axis.ticks.stepSize = vn);
@@ -223,7 +264,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
   adjustStepY(value) {
     const vn = Number(value);
-    if (!value || isNaN(vn)) {
+    if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad step delta y value: ${value}`);
     } else {
       this.chart.options.scales.yAxes.forEach(axis => axis.ticks.stepSize += vn);
@@ -231,7 +272,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     }
   }
       
-
   _init() {
     this.setInitialized(true);
     const graph_area = this.getDivWrap();
@@ -285,6 +325,11 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
         }
       }
     });
+
+    if (!CTATConfiguration.get('previewMode')) {
+      document.addEventListener(CTAT.Component.Base.Tutorable.EventType.action,
+                                this.handleAction.bind(this), false);
+    }
   }
 
   addPoint(x, y) {
@@ -307,8 +352,38 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       dataset => dataset.data.some(point => point.x == x && point.y == y));
   }
 
+  handleAction(evt) {
+    if (!evt.detail.sai) { return; } // abort if no sai
+    const ctrl_name = controller_name(evt.detail.component, this);
+    // abort if invalid component
+    if (!ctrl_name || ctrl_name == this.getName()) { return; }
+    const action = evt.detail.sai.getAction(),
+          input = evt.detail.sai.getInput();
+    // abort if not valid action
+    if (!['ButtonPresed',
+          'Update',
+          'UpdateTextField',
+          'UpdateTextArea'].includes(action)) { return; }
+    if (this.dataCtrlMinimumX.includes(ctrl_name)) {
+      this.setMinimumX(input);
+    }
+    if (this.dataCtrlMinimumY.includes(ctrl_name)) {
+      this.setMinimumY(input);
+    }
+    if (this.dataCtrlMaximumX.includes(ctrl_name)) {
+      this.setMaximumX(input);
+    }
+    if (this.dataCtrlMaximumY.includes(ctrl_name)) {
+      this.setMaximumY(input);
+    }
+    if (this.dataCtrlStepX.includes(ctrl_name)) {
+      this.setStepX(input);
+    }
+    if (this.dataCtrlStepY.includes(ctrl_name)) {
+      this.setStepY(input);
+    }
+  }
 }
-
 window.CTAT.ComponentRegistry.addComponentType('CTATChart', CTATChart);
 
 // Needed if charts are to be printed.
