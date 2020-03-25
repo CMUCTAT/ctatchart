@@ -1,11 +1,17 @@
 /**
- * @overview CTAT component for working with two dimentional charts.
+ * @overview CTAT component for working with two dimensional charts.
  */
 /** @module CTATChart */
 /** @requires module: cdn.ctat.cmu.edu/latest/ctat.min.js */
 /*global CTAT CTATGlobalFunctions:true*/
 import Chart from 'chart.js';
 
+/**
+ * Find the item in the array with the closest value to the one given.
+ * @param arr: []number
+ * @param value: number
+ * @returns :number
+ */
 function closest(arr, value) {
   return arr.reduce(
     (prev, cur) =>
@@ -20,6 +26,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this.init = this._init;
   }
 
+  /** Get the chart instance */
   get chart() { return this._chart; }
   get _xScale() {
     return this.chart.data.datasets.length
@@ -245,9 +252,13 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
         onClick: (evt, elements) => {
           const point = this.getValueForPixel(evt.offsetX, evt.offsetY);
           //console.log(point, elements);
-          //if (elements.length > 0) {
-          //  elements.forEach(ele => this.chart.data.datasets[ele._datasetIndex].data.splice(ele._index,1)); }
-          if (this.isPoint(point.x, point.y)) {
+          if (elements.length > 0) {
+            elements.filter(el => el._type == 'point')
+              .map(ele => ele._chart.data.datasets[ele._datasetIndex].data[ele._index])
+              .forEach(point => this.removePoint(point.x, point.y));
+            
+            this.chart.update();
+          } else if (this.isPoint(point.x, point.y)) {
             this.removePoint(point.x, point.y);
           } else if (point.x >= this._xScale.min
                      && point.x <= this._xScale.max
