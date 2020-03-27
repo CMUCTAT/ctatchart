@@ -58,6 +58,9 @@ class Point {
   get isHint() {
     return this.state == 'hint';
   }
+  at(x, y) {
+    return this.x == x && this.y == y;
+  }
 }
 
 export default class CTATChart extends CTAT.Component.Base.Tutorable {
@@ -68,6 +71,12 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
 
     this.points = [];
     this.init = this._init;
+    this._x = d3.scaleLinear();
+    this._y = d3.scaleLinear();
+    this._xAxisCall = d3.axisBottom();
+    this._xAxisGridCall = d3.axisBottom();
+    this._yAxisCall = d3.axisLeft();
+    this._yAxisGridCall = d3.axisLeft();
   }
 
   /** Get the chart instance */
@@ -307,34 +316,40 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const rect = this.getDivWrap().getBoundingClientRect(),
           width = rect.width,
           height = rect.height;
-    this._x = d3.scaleLinear()
-      .domain([this.dataMinimumX, this.dataMaximumX]).nice()
+    //const tran = d3.transition().duration(500);
+    this._x.domain([this.dataMinimumX, this.dataMaximumX]).nice()
       .range([this.margin.left, width - this.margin.right]);
-    this._xAxis.selectAll("*").remove();
-    this._xAxis.call( // TODO: tick values will need a different end value for fractional steps
-      g => g.attr('transform', `translate(0,${height - this.margin.bottom})`)
-        .call(d3.axisBottom(this._x).tickValues(d3.range(this.dataMinimumX,this.dataMaximumX+1,this.dataStepX)))
-        .call(g => g.selectAll('.tick line').clone()
-              .attr('y2', -height+this.margin.top+this.margin.bottom)
-              .attr('stroke-opacity', 0.1))
-    );
+    // TODO: tick values will need a different end value for fractional steps
+    const ticks = d3.range(this.dataMinimumX,
+                           this.dataMaximumX+1,
+                           this.dataStepX);
+    this._xAxisGrid
+      .call(this._xAxisGridCall.scale(this._x).tickValues(ticks)
+            .tickSize(-height+this.margin.top+this.margin.bottom)
+            .tickFormat(""))
+      .call(g => g.selectAll('.tick').attr('opacity', 0.1))
+      .call(g => g.selectAll('.domain').remove());
+    this._xAxis //.transition(tran)
+      .call(this._xAxisCall.scale(this._x).tickValues(ticks));
   }
   drawAxisY() {
     const rect = this.getDivWrap().getBoundingClientRect(),
           width = rect.width,
           height = rect.height;
-    this._y = d3.scaleLinear()
-      .domain([this.dataMinimumY, this.dataMaximumY]).nice()
+    this._y.domain([this.dataMinimumY, this.dataMaximumY]).nice()
       .range([height - this.margin.bottom, this.margin.top]);
-    this._yAxis.selectAll("*").remove();
-    this._yAxis.call( // yAxis
-      g => g.attr('transform', `translate(${this.margin.left},0)`)
-        .call(d3.axisLeft(this._y).tickValues(d3.range(this.dataMinimumY,this.dataMaximumY+1, this.dataStepY)))
-        .call(g => g.selectAll('.tick line').clone()
-              .attr('x2', width-(this.margin.right+this.margin.left))
-              .attr('stroke-opacity', 0.1))
-    );
+    const ticks = d3.range(this.dataMinimumY,
+                           this.dataMaximumY+1,
+                           this.dataStepY);
+    this._yAxisGrid
+      .call(this._yAxisGridCall.scale(this._y).tickValues(ticks)
+            .tickSize(-width+(this.margin.right+this.margin.left))
+            .tickFormat(''))
+      .call(g => g.selectAll('.tick').attr('opacity', 0.1))
+      .call(g => g.selectAll('.domain').remove());
+    this._yAxis.call(this._yAxisCall.scale(this._y).tickValues(ticks));
   }
+
   _init() {
     this.setInitialized(true);
     const graph_area = this.getDivWrap();
@@ -345,9 +360,15 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           width = rect.width,
           height = rect.height;
     const svg = dga.append('svg').attr("viewBox", [0, 0, width, height]);
-    this._xAxis = svg.append('g');
+    this._xAxisGrid = svg.append('g')
+      .attr('transform', `translate(0,${height - this.margin.bottom})`);
+    this._yAxisGrid = svg.append('g')
+      .attr('transform', `translate(${this.margin.left},0)`);
+    this._xAxis = svg.append('g')
+      .attr('transform', `translate(0,${height - this.margin.bottom})`);
+    this._yAxis = svg.append('g')
+      .attr('transform', `translate(${this.margin.left},0)`);
     this.drawAxisX();
-    this._yAxis = svg.append('g');
     this.drawAxisY();
     this._chart = svg.append('g');
 
@@ -374,11 +395,11 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this.drawPoints();
   }
   removePoint(x, y) {
-    this.points = this.points.filter(p => p.x != x || p.y != y);
+    this.points = this.points.filter(p => !p.at(x, y));
     this.drawPoints();
   }
   isPoint(x, y) {
-    return this.points.some(point => point.x == x && point.y == y);
+    return this.points.some(point => point.at(x,y));
   }
 
   handleAction(evt) {
