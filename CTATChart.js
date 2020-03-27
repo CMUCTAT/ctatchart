@@ -4,7 +4,8 @@
 /** @module CTATChart */
 /** @requires module: cdn.ctat.cmu.edu/latest/ctat.min.js */
 /*global CTAT CTATGlobalFunctions CTATSAI CTATConfiguration:true*/
-import Chart from 'chart.js';
+//import Chart from 'chart.js';
+import * as d3 from 'd3';
 
 /**
  * Find the item in the array with the closest value to the one given.
@@ -29,6 +30,16 @@ function controller_name(aComponent) {
     return aComponent.id;
   }
   return null;
+}
+
+function halo(text) {
+  text.select(function() {
+    return this.parentNode.insertBefore(this.cloneNode(true), this);
+  })
+    .attr('fill', 'none')
+    .attr('stroke', 'white')
+    .attr('stroke-width', 4)
+    .attr('stroke-linejoin', 'round');
 }
 
 export default class CTATChart extends CTAT.Component.Base.Tutorable {
@@ -163,8 +174,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad minimum x value: ${value}`);
     } else {
-      this.chart.options.scales.xAxes.forEach(axis => axis.ticks.min = vn);
-      this.chart.update();
+      this.dataMinimumX = value;
+      this._updateBottomAxis();
     }
   }
   adjustMinimumX(value) {
@@ -172,8 +183,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad minimum adjust x value: ${value}`);
     } else {
-      this.chart.options.scales.xAxes.forEach(axis => axis.ticks.min += vn);
-      this.chart.update();
+      this.dataMinimumX += value;
+      this._updateBottomAxis();
     }
   }
 
@@ -182,8 +193,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad minimum y value: ${value}`);
     } else {
-      this.chart.options.scales.yAxes.forEach(axis => axis.ticks.min = vn);
-      this.chart.update();
+      this.dataMinimumY = value;
+      this._updateLeftAxis();
     }
   }
   adjustMinimumY(value) {
@@ -191,8 +202,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad minimum adjust y value: ${value}`);
     } else {
-      this.chart.options.scales.yAxes.forEach(axis => axis.ticks.min += vn);
-      this.chart.update();
+      this.dataMinimumY += value;
+      this._updateLeftAxis();
     }
   }
 
@@ -201,8 +212,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad maximum x value: ${value}`);
     } else {
-      this.chart.options.scales.xAxes.forEach(axis => axis.ticks.max = vn);
-      this.chart.update();
+      this.dataMaximumX = value;
+      this._updateBottomAxis();
     }
   }
   adjustMaximumX(value) {
@@ -210,8 +221,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad maximum adjust x value: ${value}`);
     } else {
-      this.chart.options.scales.xAxes.forEach(axis => axis.ticks.max += vn);
-      this.chart.update();
+      this.dataMaximumX += value;
+      this._updateBottomAxis();
     }
   }
 
@@ -220,8 +231,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad maximum y value: ${value}`);
     } else {
-      this.chart.options.scales.yAxes.forEach(axis => axis.ticks.max = vn);
-      this.chart.update();
+      this.dataMaximumY = value;
+      this._updateLeftAxis();
     }
   }
   adjustMaximumY(value) {
@@ -229,8 +240,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad maximum adjust y value: ${value}`);
     } else {
-      this.chart.options.scales.yAxes.forEach(axis => axis.ticks.max += vn);
-      this.chart.update();
+      this.dataMaximumY += value;
+      this._updateLeftAxis();
     }
   }
 
@@ -239,8 +250,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad step x value: ${value}`);
     } else {
-      this.chart.options.scales.xAxes.forEach(axis => axis.ticks.stepSize = vn);
-      this.chart.update();
+      this.dataStepX = value;
+      this._updateBottomAxis();
     }
   }
   adjustStepX(value) {
@@ -248,8 +259,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad step delta x value: ${value}`);
     } else {
-      this.chart.options.scales.xAxes.forEach(axis => axis.ticks.stepSize += vn);
-      this.chart.update();
+      this.dataStepX += value;
+      this._updateBottomAxis();
     }
   }
 
@@ -258,8 +269,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad step x value: ${value}`);
     } else {
-      this.chart.options.scales.yAxes.forEach(axis => axis.ticks.stepSize = vn);
-      this.chart.update();
+      this.dataStepY = value;
+      this._updateLeftAxis();
     }
   }
   adjustStepY(value) {
@@ -267,65 +278,62 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (value === null || value === '' || isNaN(vn)) {
       console.error(`CTATChart: bad step delta y value: ${value}`);
     } else {
-      this.chart.options.scales.yAxes.forEach(axis => axis.ticks.stepSize += vn);
-      this.chart.update();
+      this.dataStepY += value;
+      this._updateLeftAxis();
     }
   }
 
+  _updateBottomAxis() {
+    const rect = this.getDivWrap().getBoundingClientRect(),
+          width = rect.width,
+          height = rect.height;
+    this._x = d3.scaleLinear()
+      .domain([this.dataMinimumX, this.dataMaximumX]).nice()
+      .range([this.margin.left, width - this.margin.right]);
+    this._xAxis.selectAll("*").remove();
+    this._xAxis.call(
+      g => g.attr('transform', `translate(0,${height - this.margin.bottom})`)
+        .call(d3.axisBottom(this._x).tickValues(d3.range(this.dataMinimumX,this.dataMaximumX+1,this.dataStepX)))
+        .call(g => g.selectAll('.tick line').clone()
+              .attr('y2', -height+this.margin.top+this.margin.bottom)
+              .attr('stroke-opacity', 0.1))
+    );
+  }
+  _updateLeftAxis() {
+    const rect = this.getDivWrap().getBoundingClientRect(),
+          width = rect.width,
+          height = rect.height;
+    this._y = d3.scaleLinear()
+      .domain([this.dataMinimumY, this.dataMaximumY]).nice()
+      .range([height - this.margin.bottom, this.margin.top]);
+    this._yAxis.selectAll("*").remove();
+    this._yAxis.call( // yAxis
+      g => g.attr('transform', `translate(${this.margin.left},0)`)
+        .call(d3.axisLeft(this._y).tickValues(d3.range(this.dataMinimumY,this.dataMaximumY+1, this.dataStepY)))
+        .call(g => g.selectAll('.tick line').clone()
+              .attr('x2', width-(this.margin.right+this.margin.left))
+              .attr('stroke-opacity', 0.1))
+    );
+  }
   _init() {
     this.setInitialized(true);
     const graph_area = this.getDivWrap();
     this.setComponent(graph_area);
     this.addComponentReference(this, graph_area);
-    this._chart = new Chart(graph_area, {
-      type: 'scatter',
-      data: {
-        datasets: [{
-          label: 'Dataset',
-          data: []
-        }]
-      },
-      options: {
-        legend: {
-          display: false
-        },
-        onClick: (evt, elements) => {
-          const point = this.getValueForPixel(evt.offsetX, evt.offsetY);
-          //console.log(point, elements);
-          if (elements.length > 0) {
-            elements.filter(el => el._type == 'point')
-              .map(ele => ele._chart.data.datasets[ele._datasetIndex].data[ele._index])
-              .forEach(point => this.removePoint(point.x, point.y));
+    const dga = d3.select(graph_area);
+    this.margin = {top: 10, right: 10, bottom: 30, left: 30};
+    const margin = {top: 10, right: 10, bottom: 30, left: 30};
+    const rect = graph_area.getBoundingClientRect(),
+          width = rect.width,
+          height = rect.height;
+    const svg = dga.append('svg').attr("viewBox", [0, 0, width, height]);
+    let data = [];
+    this._xAxis = svg.append('g');
+    this._updateBottomAxis();
+    this._yAxis = svg.append('g');
+    this._updateLeftAxis();
 
-            this.chart.update();
-          } else if (this.isPoint(point.x, point.y)) {
-            this.removePoint(point.x, point.y);
-          } else if (point.x >= this._xScale.min
-                     && point.x <= this._xScale.max
-                     && point.y >= this._yScale.min
-                     && point.y <= this._yScale.max) {
-            this.addPoint(point.x, point.y);
-          }
-        },
-        scales: {
-          xAxes: [{
-            ticks: {
-              min: this.dataMinimumX,
-              max: this.dataMaximumX,
-              stepSize: this.dataStepX,
-            }
-          }],
-          yAxes: [{
-            ticks: {
-              max: this.dataMaximumY,
-              min: this.dataMinimumY,
-              stepSize: this.dataStepY,
-            }
-          }]
-        }
-      }
-    });
-
+    // Add listener for controller events.
     if (!CTATConfiguration.get('previewMode')) {
       document.addEventListener(CTAT.Component.Base.Tutorable.EventType.action,
                                 this.handleAction.bind(this), false);
