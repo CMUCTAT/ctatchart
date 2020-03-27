@@ -42,11 +42,31 @@ function halo(text) {
     .attr('stroke-linejoin', 'round');
 }
 
+class Point {
+  constructor(x, y, state) {
+    this.x = x;
+    this.y = y;
+    this.state = state;
+    this.r = 3;
+  }
+  get isCorrect() {
+    return this.state == 'correct';
+  }
+  get isIncorrect() {
+    return this.state == 'incorrect';
+  }
+  get isHint() {
+    return this.state == 'hint';
+  }
+}
+
 export default class CTATChart extends CTAT.Component.Base.Tutorable {
   constructor () {
     super("CTATChart", "TwoDimensionChart");
     this._chart = null;
+    this.margin = {top: 10, right: 10, bottom: 30, left: 30};
 
+    this.points = [];
     this.init = this._init;
   }
 
@@ -175,7 +195,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       console.error(`CTATChart: bad minimum x value: ${value}`);
     } else {
       this.dataMinimumX = value;
-      this._updateBottomAxis();
+      this.drawAxisX();
     }
   }
   adjustMinimumX(value) {
@@ -184,7 +204,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       console.error(`CTATChart: bad minimum adjust x value: ${value}`);
     } else {
       this.dataMinimumX += value;
-      this._updateBottomAxis();
+      this.drawAxisX();
     }
   }
 
@@ -194,7 +214,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       console.error(`CTATChart: bad minimum y value: ${value}`);
     } else {
       this.dataMinimumY = value;
-      this._updateLeftAxis();
+      this.drawAxisY();
     }
   }
   adjustMinimumY(value) {
@@ -203,7 +223,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       console.error(`CTATChart: bad minimum adjust y value: ${value}`);
     } else {
       this.dataMinimumY += value;
-      this._updateLeftAxis();
+      this.drawAxisY();
     }
   }
 
@@ -213,7 +233,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       console.error(`CTATChart: bad maximum x value: ${value}`);
     } else {
       this.dataMaximumX = value;
-      this._updateBottomAxis();
+      this.drawAxisX();
     }
   }
   adjustMaximumX(value) {
@@ -222,7 +242,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       console.error(`CTATChart: bad maximum adjust x value: ${value}`);
     } else {
       this.dataMaximumX += value;
-      this._updateBottomAxis();
+      this.drawAxisX();
     }
   }
 
@@ -232,7 +252,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       console.error(`CTATChart: bad maximum y value: ${value}`);
     } else {
       this.dataMaximumY = value;
-      this._updateLeftAxis();
+      this.drawAxisY();
     }
   }
   adjustMaximumY(value) {
@@ -241,7 +261,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       console.error(`CTATChart: bad maximum adjust y value: ${value}`);
     } else {
       this.dataMaximumY += value;
-      this._updateLeftAxis();
+      this.drawAxisY();
     }
   }
 
@@ -251,7 +271,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       console.error(`CTATChart: bad step x value: ${value}`);
     } else {
       this.dataStepX = value;
-      this._updateBottomAxis();
+      this.drawAxisX();
     }
   }
   adjustStepX(value) {
@@ -260,7 +280,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       console.error(`CTATChart: bad step delta x value: ${value}`);
     } else {
       this.dataStepX += value;
-      this._updateBottomAxis();
+      this.drawAxisX();
     }
   }
 
@@ -270,7 +290,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       console.error(`CTATChart: bad step x value: ${value}`);
     } else {
       this.dataStepY = value;
-      this._updateLeftAxis();
+      this.drawAxisY();
     }
   }
   adjustStepY(value) {
@@ -279,11 +299,11 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       console.error(`CTATChart: bad step delta y value: ${value}`);
     } else {
       this.dataStepY += value;
-      this._updateLeftAxis();
+      this.drawAxisY();
     }
   }
 
-  _updateBottomAxis() {
+  drawAxisX() {
     const rect = this.getDivWrap().getBoundingClientRect(),
           width = rect.width,
           height = rect.height;
@@ -291,7 +311,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .domain([this.dataMinimumX, this.dataMaximumX]).nice()
       .range([this.margin.left, width - this.margin.right]);
     this._xAxis.selectAll("*").remove();
-    this._xAxis.call(
+    this._xAxis.call( // TODO: tick values will need a different end value for fractional steps
       g => g.attr('transform', `translate(0,${height - this.margin.bottom})`)
         .call(d3.axisBottom(this._x).tickValues(d3.range(this.dataMinimumX,this.dataMaximumX+1,this.dataStepX)))
         .call(g => g.selectAll('.tick line').clone()
@@ -299,7 +319,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
               .attr('stroke-opacity', 0.1))
     );
   }
-  _updateLeftAxis() {
+  drawAxisY() {
     const rect = this.getDivWrap().getBoundingClientRect(),
           width = rect.width,
           height = rect.height;
@@ -321,17 +341,15 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this.setComponent(graph_area);
     this.addComponentReference(this, graph_area);
     const dga = d3.select(graph_area);
-    this.margin = {top: 10, right: 10, bottom: 30, left: 30};
-    const margin = {top: 10, right: 10, bottom: 30, left: 30};
     const rect = graph_area.getBoundingClientRect(),
           width = rect.width,
           height = rect.height;
     const svg = dga.append('svg').attr("viewBox", [0, 0, width, height]);
-    let data = [];
     this._xAxis = svg.append('g');
-    this._updateBottomAxis();
+    this.drawAxisX();
     this._yAxis = svg.append('g');
-    this._updateLeftAxis();
+    this.drawAxisY();
+    this._chart = svg.append('g');
 
     // Add listener for controller events.
     if (!CTATConfiguration.get('previewMode')) {
@@ -340,24 +358,27 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     }
   }
 
+  drawPoints() {
+    this.chart.selectAll('circle')
+      .data(this.points)
+      .join('circle')
+      .classed('CTAT--correct', d => d.isCorrect)
+      .classed('CTAT--incorrect', d => d.isIncorrect)
+      .attr("cx", d => this._x(d.x))
+      .attr("cy", d => this._y(d.y))
+      .attr('r', d => d.r)
+      .attr('fill', 'black');
+  }
   addPoint(x, y) {
-    this.chart.data.datasets.forEach(
-      dataset => dataset.data.push({x: x, y: y}));
-    this.chart.update();
+    this.points.push(new Point(x, y, 'ungraded'));
+    this.drawPoints();
   }
   removePoint(x, y) {
-    this.chart.data.datasets.forEach(dataset => {
-      for (let i = dataset.data.length - 1; i >= 0; i--) {
-        if (dataset.data[i].x == x && dataset.data[i].y == y) {
-          dataset.data.splice(i, 1);
-        }
-      }
-    });
-    this.chart.update();
+    this.points = this.points.filter(p => p.x != x || p.y != y);
+    this.drawPoints();
   }
   isPoint(x, y) {
-    return this.chart.data.datasets.some(
-      dataset => dataset.data.some(point => point.x == x && point.y == y));
+    return this.points.some(point => point.x == x && point.y == y);
   }
 
   handleAction(evt) {
@@ -393,11 +414,3 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
 }
 window.CTAT.ComponentRegistry.addComponentType('CTATChart', CTATChart);
-
-// Needed if charts are to be printed.
-// https://www.chartjs.org/docs/latest/general/responsive.html#important-note
-window.addEventListener("beforeprint", () => {
-  for (let id in Chart.instances) {
-    Chart.instances[id].resize();
-  }
-});
