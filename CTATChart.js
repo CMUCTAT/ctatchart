@@ -4,7 +4,6 @@
 /** @module CTATChart */
 /** @requires module: cdn.ctat.cmu.edu/latest/ctat.min.js */
 /*global CTAT CTATGlobalFunctions CTATSAI CTATConfiguration:true*/
-//import Chart from 'chart.js';
 import * as d3 from 'd3';
 
 /**
@@ -81,27 +80,20 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
 
   /** Get the chart instance */
   get chart() { return this._chart; }
-  get _xScale() {
-    return this.chart.data.datasets.length
-      ? this.chart.scales[this.chart.getDatasetMeta(0).xAxisID]
-      : null;
-  }
-  get _yScale() {
-    return this.chart.scales[this.chart.getDatasetMeta(0).yAxisID];
-  }
+
   /**
    * @returns {x: number, y: number}
    */
   getValueForPixel(x, y) {
     if (this.dataIsSnapping) {
       return {
-        x: this.closestXtick(this._xScale.getValueForPixel(x)),
-        y: this.closestYtick(this._yScale.getValueForPixel(y))
+        x: this.closestXtick(this._x.invert(x)),
+        y: this.closestYtick(this._y.invert(y))
       };
     } else {
       return {
-        x: this._xScale.getValueForPixel(x),
-        y: this._yScale.getValueForPixel(y)
+        x: this._x.invert(x),
+        y: this._y.invert(y)
       }
     }
   }
@@ -109,12 +101,12 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    * @param value: number - an x axis value
    * @returns : number - the value of the closest x tickmark to value.
    */
-  closestXtick(value) { return closest(this._xScale.ticks, value); }
+  closestXtick(value) { return closest(this._xAxisCall.tickValues(), value); }
   /**
    * @param value: number - an y axis value
    * @returns : number - the value of the closest y tickmark to value.
    */
-  closestYtick(value) { return closest(this._yScale.ticks, value); }
+  closestYtick(value) { return closest(this._yAxisCall.tickValues(), value); }
 
   get dataIsSnapping() {
     const snap = this.getDivWrap().getAttribute('data-ctat-snapping');
@@ -371,6 +363,19 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this.drawAxisX();
     this.drawAxisY();
     this._chart = svg.append('g');
+    this.drawPoints();
+    const add_point = (x,y) => {
+      const point = this.getValueForPixel(x,y);
+      if (this.isPoint(point.x, point.y))
+        this.removePoint(point.x, point.y);
+      else
+        this.addPoint(point.x, point.y);
+    };
+    svg.on('click', function() {
+      const coords = d3.mouse(this);
+      add_point(coords[0], coords[1]);
+    });
+      
 
     // Add listener for controller events.
     if (!CTATConfiguration.get('previewMode')) {
@@ -380,6 +385,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
 
   drawPoints() {
+    const chart = this;
     this.chart.selectAll('circle')
       .data(this.points)
       .join('circle')
