@@ -110,7 +110,7 @@ class Point {
     this.x = x || 0;
     this.y = y || 0;
     this.state = state || "ungraded";
-    this.r = 3;
+    this.r = 4;
   }
   get isCorrect() {
     return this.state == 'correct';
@@ -751,9 +751,11 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     case "grapherPointAdded":
       const point = Point.fromString(aSAI.getInput());
       const last_point = this.points[this.points.length-1];
-      last_point.state='incorrect';
+      last_point.state='ungraded';
       last_point.x = point.x;
       last_point.y = point.y;
+      this.points = this.points.filter(p => !p.isIncorrect);
+      last_point.state='incorrect';
       this.drawPoints();
       break;
     case "ChangeUpperHorizontalBoundary":
