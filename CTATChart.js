@@ -157,7 +157,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     // need to clobber parent methods here.
     this.init = this._init;
     this.showCorrect = this._showCorrect;
-    this.showIncorrect = this._showIncorrect;
+    this.showInCorrect = this._showInCorrect;
     this.updateSAI = this._updateSAI;
   }
 
@@ -345,6 +345,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     } else {
       this.dataMinimumX = value;
       this.drawAxisX();
+      this.drawPoints();
     }
   }
   adjustMinimumX(value) {
@@ -354,6 +355,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     } else {
       this.dataMinimumX += value;
       this.drawAxisX();
+      this.drawPoints();
     }
   }
 
@@ -370,6 +372,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     } else {
       this.dataMinimumY = value;
       this.drawAxisY();
+      this.drawPoints();
     }
   }
   adjustMinimumY(value) {
@@ -379,6 +382,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     } else {
       this.dataMinimumY += value;
       this.drawAxisY();
+      this.drawPoints();
     }
   }
 
@@ -395,6 +399,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     } else {
       this.dataMaximumX = value;
       this.drawAxisX();
+      this.drawPoints();
     }
   }
   adjustMaximumX(value) {
@@ -404,6 +409,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     } else {
       this.dataMaximumX += value;
       this.drawAxisX();
+      this.drawPoints();
     }
   }
 
@@ -420,6 +426,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     } else {
       this.dataMaximumY = value;
       this.drawAxisY();
+      this.drawPoints();
     }
   }
   adjustMaximumY(value) {
@@ -429,6 +436,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     } else {
       this.dataMaximumY += value;
       this.drawAxisY();
+      this.drawPoints();
     }
   }
 
@@ -526,6 +534,13 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this.setComponent(graph_area);
     this.addComponentReference(this, graph_area);
     const dga = d3.select(graph_area);
+    this._tooltip = dga.append('div')
+      .style('opacity', 0)
+      .style('pointer-events', 'none')
+      .style('font-size', 'small')
+      .style('font-family', 'Arial, Helvetica, sans-serif') 
+      .classed('tooltip', true)
+      .style('position', 'absolute');
     const rect = graph_area.getBoundingClientRect(),
           width = rect.width,
           height = rect.height;
@@ -541,13 +556,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this.drawAxisX();
     this.drawAxisY();
     this._chart = svg.append('g');
-    this._tooltip = dga.append('div')
-      .style('opacity', 0)
-      .style('pointer-events', 'none')
-      .style('font-size', 'small')
-      .style('font-family', 'Arial, Helvetica, sans-serif') 
-      .classed('tooltip', true)
-      .style('position', 'absolute');
     this.drawPoints();
     const add_point = (x,y) => {
       if (this.getEnabled()) {
@@ -566,7 +574,14 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       const coords = d3.mouse(this);
       add_point(coords[0], coords[1]);
     });
-      
+
+    const cursor = svg.append('g').append('circle')
+          .style('fill', 'black').attr('r', 3).style('opacity', 0);
+    const mousemove = (x,y) => {
+      const point = this.getValueForPoint(x,y);
+      const x0 = this._x(point.x), y0 = this._y(point.y);
+      cursor.attr('cx', x0).attr('cy', y0);
+    }
 
     // Add listener for controller events.
     if (!CTATConfiguration.get('previewMode')) {
@@ -598,28 +613,33 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   drawPoints() {
     const tooltip = this._tooltip;
     this.chart.selectAll('circle')
-      .data(this.points)
-      .join('circle')
-      .classed('CTAT--correct', d => d.isCorrect)
-      .classed('CTAT--incorrect', d => d.isIncorrect)
-      .attr("cx", d => this._x(d.x))
-      .attr("cy", d => this._y(d.y))
-      .attr('r', d => d.r)
-      .attr('fill', 'black')
-      .on('mouseover', () =>
-          tooltip.transition().duration(200).style('opacity', 1))
-      .on('mousemove', function (d) {
-        //console.log(this);
-        tooltip.html(d.toString())
-          .style('left', `${d3.event.pageX+d.r+3}px`)
-          .style('top', `${d3.event.pageY+d.r+3}px`);
-      })
-      .on('mouseleave', () =>
-          tooltip.transition().duration(200).style('opacity', 0))
+      .data(this.points, d=>d)
+      .join(
+        enter => enter.append('circle')
+          .classed('CTATChart--point', true)
+          .classed('CTAT--correct', d => d.isCorrect)
+          .classed('CTAT--incorrect', d => d.isIncorrect)
+          .attr("cx", d => this._x(d.x))
+          .attr("cy", d => this._y(d.y))
+          .attr('r', d => d.r)
+          .on('mouseover', () =>
+              tooltip.transition().duration(200).style('opacity', 1))
+          .on('mousemove', d => tooltip.html(d.toString())
+              .style('left', `${d3.event.pageX+d.r+3}px`)
+              .style('top', `${d3.event.pageY-d.r-12}px`)
+             )
+          .on('mouseleave', () =>
+              tooltip.transition().duration(200).style('opacity', 0)),
+        update => update.call(
+          update => update
+            .classed('CTAT--incorrect', d=>d.isIncorrect)
+            .classed('CTAT--correct', d => d.isCorrect)
+            .transition().duration(500).attr('cx', d => this._x(d.x)).attr("cy", d => this._y(d.y))),
+        exit => exit.remove())
   }
 
   addPoint(x, y) {
-    this.points.push(new Point(x, y, 'ungraded'));
+    this.points.push(new Point(x, y));
     this.drawPoints();
   }
   removePoint(x, y) {
@@ -688,6 +708,15 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   _showCorrect(aSAI) {
     const action = aSAI.getAction();
     switch (action) {
+    case "grapherPointAdded":
+      const point = Point.fromString(aSAI.getInput());
+      const last_point = this.points[this.points.length-1];
+      last_point.state='correct';
+      last_point.x = point.x;
+      last_point.y = point.y;
+      this.points = this.points.filter(p => !p.isIncorrect);
+      this.drawPoints();
+      break;
     case "ChangeUpperHorizontalBoundary":
       this.dataCtrlMaximumX.forEach(c => set_correct(c, aSAI));
       break;
@@ -716,9 +745,17 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       console.error(`Unhandled correct Action "${action}" for ${this.getName()}`);
     }
   }
-  _showIncorrect(aSAI) {
+  _showInCorrect(aSAI) {
     const action = aSAI.getAction();
     switch (action) {
+    case "grapherPointAdded":
+      const point = Point.fromString(aSAI.getInput());
+      const last_point = this.points[this.points.length-1];
+      last_point.state='incorrect';
+      last_point.x = point.x;
+      last_point.y = point.y;
+      this.drawPoints();
+      break;
     case "ChangeUpperHorizontalBoundary":
       this.dataCtrlMaximumX.forEach(c => set_incorrect(c, aSAI));
       break;
