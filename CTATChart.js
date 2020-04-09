@@ -153,6 +153,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this.margin = {top: 10, right: 10, bottom: 30, left: 30};
 
     this.points = [];
+    this.equation = d3.scaleLinear();
     this._x = d3.scaleLinear();
     this._y = d3.scaleLinear();
     this._xAxisCall = d3.axisBottom();
@@ -352,6 +353,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.dataMinimumX = value;
       this.drawAxisX();
       this.drawPoints();
+      this.drawLine();
     }
   }
   adjustMinimumX(value) {
@@ -362,6 +364,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.dataMinimumX += value;
       this.drawAxisX();
       this.drawPoints();
+      this.drawLine();
     }
   }
 
@@ -379,6 +382,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.dataMinimumY = value;
       this.drawAxisY();
       this.drawPoints();
+      this.drawLine();
     }
   }
   adjustMinimumY(value) {
@@ -389,6 +393,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.dataMinimumY += value;
       this.drawAxisY();
       this.drawPoints();
+      this.drawLine();
     }
   }
 
@@ -406,6 +411,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.dataMaximumX = value;
       this.drawAxisX();
       this.drawPoints();
+      this.drawLine();
     }
   }
   adjustMaximumX(value) {
@@ -416,6 +422,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.dataMaximumX += value;
       this.drawAxisX();
       this.drawPoints();
+      this.drawLine();
     }
   }
 
@@ -433,6 +440,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.dataMaximumY = value;
       this.drawAxisY();
       this.drawPoints();
+      this.drawLine();
     }
   }
   adjustMaximumY(value) {
@@ -443,6 +451,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.dataMaximumY += value;
       this.drawAxisY();
       this.drawPoints();
+      this.drawLine();
     }
   }
 
@@ -497,6 +506,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
 
   drawAxisX() {
+    if (!this._xAxisGrid || !this._xAxis) { return; }
     const rect = this.getDivWrap().getBoundingClientRect(),
           width = rect.width,
           height = rect.height;
@@ -519,6 +529,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .call(this._xAxisCall.scale(this._x).tickValues(ticks));
   }
   drawAxisY() {
+    if (!this._yAxisGrid || !this._yAxis) { return; }
     const rect = this.getDivWrap().getBoundingClientRect(),
           width = rect.width,
           height = rect.height;
@@ -570,8 +581,10 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .attr('transform', `translate(${this.margin.left},0)`);
     this.drawAxisX();
     this.drawAxisY();
-    this._chart = svg.append('g');
+    this._line = svg.append('g').classed('CTATChart--line', true);
+    this._chart = svg.append('g').classed('CTATChart--points', true);
     this.drawPoints();
+    this.drawLine();
     const add_point = (x,y) => {
       if (this.getEnabled()) {
         const point = this.getValueForPixel(x,y);
@@ -659,7 +672,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
             .transition().duration(500)
             .attr('cx', d => this._x(d.x))
             .attr("cy", d => this._y(d.y))),
-        exit => exit.remove())
+        exit => exit.remove());
   }
 
   addPoint(x, y) {
@@ -675,6 +688,51 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
 
   drawLine() {
+    const correctPoints = this.points.filter(p => p.isCorrect);
+    const lines = [];
+    if (correctPoints.length > 1) {
+      this.equation.domain([correctPoints[0].x, correctPoints[1].x])
+        .range([correctPoints[0].y, correctPoints[1].y]);
+      let x1 = this.dataMinimumX,
+          y1 = this.equation(this.dataMinimumX),
+          x2 = this.dataMaximumX,
+          y2 = this.equation(this.dataMaximumX);
+      if (y1 < this.dataMinimumY) {
+        x1 = this.equation.invert(this.dataMinimumY);
+        y1 = this.dataMinimumY;
+      }
+      if (y1 > this.dataMaximumY) {
+        x1 = this.equation.invert(this.dataMaximumY);
+        y1 = this.dataMaximumY;
+      }
+      if (y2 < this.dataMinimumY) {
+        x2 = this.equation.invert(this.dataMinimumY);
+        y2 = this.dataMinimumY;
+      }
+      if (y2 > this.dataMaximumY) {
+        x2 = this.equation.invert(this.dataMaximumY);
+        y2 = this.dataMaximumY;
+      }
+      lines.push([x1,y1,x2,y2]);
+    }
+    this._line.selectAll('line')
+      .data(lines)
+      .join(
+        enter => enter.append('line')
+          .attr('x1', d => this._x(d[0]))
+          .attr('y1', d => this._y(d[1]))
+          .attr('x2', d => this._x(d[2]))
+          .attr('y2', d => this._y(d[3]))
+          .attr('stroke-width', 2)
+          .attr('stroke', 'black'),
+        update => update.call(
+          update => update
+            .transition().duration(500)
+            .attr('x1', d => this._x(d[0]))
+            .attr('y1', d => this._y(d[1]))
+            .attr('x2', d => this._x(d[2]))
+            .attr('y2', d => this._y(d[3]))),
+        exit => exit.remove());
   }
   
   draw() {
@@ -751,6 +809,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       last_point.y = point.y;
       this.points = this.points.filter(p => !p.isIncorrect);
       this.drawPoints();
+      this.drawLine();
       break;
     case "ChangeUpperHorizontalBoundary":
       this.dataCtrlMaximumX.forEach(c => set_correct(c, aSAI));
