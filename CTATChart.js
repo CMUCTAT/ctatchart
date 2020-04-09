@@ -83,7 +83,10 @@ function rerouted_sai(component, sai) {
  */
 function set_correct(component, sai) {
   const comp = $(`#${component}`).data('CTATComponent');
-  return comp.setCorrect(rerouted_sai(comp, sai));
+  if (comp) {
+    return comp.setCorrect(rerouted_sai(comp, sai));
+  }
+  console.error(`Unable to locate CTAT component: ${component}`);
 }
 /**
  * Calls setCorrect on the component with the id of 'component' with the 'sai'
@@ -92,7 +95,10 @@ function set_correct(component, sai) {
  */
 function set_incorrect(component, sai) {
   const comp = $(`#${component}`).data('CTATComponent');
-  return comp.setIncorrect(rerouted_sai(comp, sai));
+  if (comp) {
+    return comp.setIncorrect(rerouted_sai(comp, sai));
+  }
+  console.error(`Unable to locate CTAT component: ${component}`);
 }
 
 function halo(text) {
@@ -529,7 +535,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .call(g => g.selectAll('.tick').attr('opacity', 0.1))
       .call(g => g.selectAll('.domain').attr('opacity', 0))
       .call(g => g.selectAll('.domain').remove());
-    this._yAxis.transition(tran).call(this._yAxisCall.scale(this._y).tickValues(ticks));
+    this._yAxis.transition(tran)
+      .call(this._yAxisCall.scale(this._y).tickValues(ticks));
   }
 
   _init() {
@@ -569,7 +576,12 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       if (this.getEnabled()) {
         const point = this.getValueForPixel(x,y);
         if (this.isPoint(point.x, point.y)) {
-          this.removePoint(point.x, point.y);
+          const epoint = this.points.find(p => p.at(point.x, point.y));
+          if (epoint.isCorrect) {
+            // start line drawing if |points| > 2?
+          } else {
+            this.removePoint(point.x, point.y);
+          }
         } else {
           this.addPoint(point.x, point.y);
           this.setAction('grapherPointAdded');
