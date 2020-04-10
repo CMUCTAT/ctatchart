@@ -149,9 +149,9 @@ class Point {
 export default class CTATChart extends CTAT.Component.Base.Tutorable {
   constructor () {
     super("CTATChart", "TwoDimensionChart");
-    this._chart = null;
     this.margin = {top: 10, right: 10, bottom: 30, left: 30};
 
+    // data
     this.points = [];
     this.equation = d3.scaleLinear();
     this._x = d3.scaleLinear();
@@ -161,6 +161,14 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this._yAxisCall = d3.axisLeft();
     this._yAxisGridCall = d3.axisLeft();
 
+    // graphics
+    this._xAxis = null;
+    this._xAxisGrid = null;
+    this._yAxis = null;
+    this._yAxisGrid = null;
+    this._line = null;
+    this._chart = null;
+    
     // need to clobber parent methods here.
     this.init = this._init;
     this.showCorrect = this._showCorrect;
@@ -608,13 +616,22 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       add_point(coords[0], coords[1]);
     });
 
-    const cursor = svg.append('g').append('circle')
+    const cursor = svg.append('g').classed('CTATChart--cursor', true)
+          .append('circle')
           .style('fill', 'black').attr('r', 3).style('opacity', 0);
     const mousemove = (x,y) => {
-      const point = this.getValueForPoint(x,y);
-      const x0 = this._x(point.x), y0 = this._y(point.y);
-      cursor.attr('cx', x0).attr('cy', y0);
+      if (this.getEnabled()) {
+        const point = this.getValueForPixel(x,y);
+        const x0 = this._x(point.x), y0 = this._y(point.y);
+        cursor.attr('cx', x0).attr('cy', y0);
+      }
     }
+    svg.on('mousemove', function() {
+      const coords = d3.mouse(this);
+      mousemove(coords[0], coords[1]);
+    });
+    svg.on('mouseover', () => this.getEnabled() && cursor.style('opacity', 0.2));
+    svg.on('mouseleave', () => cursor.style('opacity', 0));
 
     // Add listener for controller events.
     if (!CTATConfiguration.get('previewMode')) {
@@ -646,6 +663,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   drawPoints() {
     // TODO: indicate points that are not visible e.g. with
     // .filter(d=>this.pPointVisible(d))
+    if (this.chart === null) { return; }
     const tooltip = this._tooltip;
     this.chart.selectAll('.CTATChart--point')
       .data(this.points, d=>d)
@@ -688,6 +706,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
 
   drawLine() {
+    if (this._line === null) { return; }
     const correctPoints = this.points.filter(p => p.isCorrect);
     const lines = [];
     if (correctPoints.length > 1) {
