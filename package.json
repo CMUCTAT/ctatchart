@@ -8,7 +8,7 @@
     "build": "parcel build demo/*.html --public-url ./",
     "demo": "parcel demo/index.html",
     "lint": "eslint CTATChart.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "ava"
   },
   "repository": {
     "type": "git",
@@ -30,11 +30,14 @@
   },
   "homepage": "https://gitlab.com/RingenbergCTAT/ctatchart#readme",
   "dependencies": {
-    "chart.js": "^2.9.3",
+    "d3": "^5.15.1",
     "jquery": "^3.4.1"
   },
   "devDependencies": {
+    "ava": "^3.6.0",
+    "browser-env": "^3.3.0",
     "eslint": "^6.8.0",
-    "parcel": "^1.12.4"
+    "parcel": "^1.12.4",
+    "puppeteer": "^2.1.1"
   }
 }
