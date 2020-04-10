@@ -88,6 +88,7 @@ function set_correct(component, sai) {
   }
   console.error(`Unable to locate CTAT component: ${component}`);
 }
+
 /**
  * Calls setCorrect on the component with the id of 'component' with the 'sai'
  * @argument comonent: string
@@ -168,7 +169,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this._yAxisGrid = null;
     this._line = null;
     this._chart = null;
-    
+
     // need to clobber parent methods here.
     this.init = this._init;
     this.showCorrect = this._showCorrect;
@@ -523,7 +524,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .range([this.margin.left, width - this.margin.right]);
     // TODO: tick values will need a different end value for fractional steps
     const ticks = d3.range(this.dataMinimumX,
-                           this.dataMaximumX+1,
+                           this.dataMaximumX + 1,
                            this.dataStepX);
     this._xAxisGrid
       .transition(tran)
@@ -545,7 +546,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this._y.domain([this.dataMinimumY, this.dataMaximumY]).nice()
       .range([height - this.margin.bottom, this.margin.top]);
     const ticks = d3.range(this.dataMinimumY,
-                           this.dataMaximumY+1,
+                           this.dataMaximumY + 1,
                            this.dataStepY);
     this._yAxisGrid.transition(tran)
       .call(this._yAxisGridCall.scale(this._y).tickValues(ticks)
@@ -568,7 +569,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .style('opacity', 0)
       .style('pointer-events', 'none')
       .style('font-size', 'small')
-      .style('font-family', 'Arial, Helvetica, sans-serif') 
+      .style('font-family', 'Arial, Helvetica, sans-serif')
       .classed('tooltip', true)
       .style('position', 'absolute');
     const rect = graph_area.getBoundingClientRect(),
@@ -630,7 +631,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       const coords = d3.mouse(this);
       mousemove(coords[0], coords[1]);
     });
-    svg.on('mouseover', () => this.getEnabled() && cursor.style('opacity', 0.2));
+    svg.on('mouseover',
+           () => this.getEnabled() && cursor.style('opacity', 0.2));
     svg.on('mouseleave', () => cursor.style('opacity', 0));
 
     // Add listener for controller events.
@@ -753,7 +755,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
             .attr('y2', d => this._y(d[3]))),
         exit => exit.remove());
   }
-  
+
   draw() {
     this.drawAxisX();
     this.drawAxisY();
@@ -869,7 +871,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       last_point.x = point.x;
       last_point.y = point.y;
       this.points = this.points.filter(p => !p.isIncorrect);
-      last_point.state='incorrect';
+      last_point.state = 'incorrect';
       this.drawPoints();
       break;
     }
