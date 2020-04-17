@@ -1,6 +1,7 @@
 /**
  * @overview CTAT component for working with two dimensional charts.
  *
+ * <point> := "(:number,:number)"
  * Actions:
  *  ChangeUpperHorizontalBoundary (:number)
  *  ChangeUpperVerticalBoundary (:number)
@@ -8,21 +9,21 @@
  *  ChangeLowerVerticalBoundary (:number)
  *  ChangeHorizontalInterval (:number)
  *  ChangeVerticalInterval (:number)
+ *  grapherPointAdded (<point>)
+ *  grapherError ('PointOutOfBounds'|'curveNeedsMorePoints')
+ *     - When changing boundary results in point out of bounds.
+ *     - When less than 2 correct points are available.
+ *  grapherCurveAdded (<equation>)
  * TODO:
- * <point> := "(:number,:number)"
- * <equation> := "y = 3x"
- * - Action: ChangeHorizontalLabel (:string)
- * - Action: ChangeVerticalLabel (:string)
- * - Action: ChangeHorizontalUnit (:string)
- * - Action: ChangeVerticalUnit (:string)
- * - Action: grapherError
- *   Input: PointOutOfBounds (When changing boundary results in point out of bounds)
- *   Input: curveNeedsMorePoints
- * - Action: IndicateLineAddIntent (-1)
- * - Action: IndicatePointAddIntent (-1)
- * - Action: grapherPointAdded (<point>)
- * - Action: grapherCurveAdded (<equation>)
- * - Action: StopPointAddIntent (-1)
+ * <equation> := "y = 3x" "[(x,y),...]"
+ * - Action: ChangeHorizontalLabel (:string) <- Not going to do
+ * - Action: ChangeVerticalLabel (:string) <- Not going to do
+ * - Action: ChangeHorizontalUnit (:string) <- Not going to do
+ * - Action: ChangeVerticalUnit (:string) <- Not going to do
+ * - Action: IndicateLineAddIntent (-1) <- Not going to do
+ * - Action: IndicatePointAddIntent (-1) <- Not going to do
+ * - Action: StopPointAddIntent (-1) <- Not going to do
+ * - TPA: grapherCurveAdded
  */
 /** @module CTATChart */
 /** @requires module: cdn.ctat.cmu.edu/latest/ctat.min.js */
@@ -40,6 +41,14 @@ function closest(arr, value) {
   return arr.reduce(
     (prev, cur) =>
       (Math.abs(cur - value) < Math.abs(prev - value) ? cur : prev));
+}
+
+function bounded(value, axis) {
+  const c = axis.clamp();
+  axis.clamp(true);
+  const v = axis(value);
+  axis.clamp(c);
+  return v;
 }
 
 /**
@@ -375,6 +384,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.drawAxisX();
       this.drawPoints();
       this.drawLine();
+      this.checkAllPointsVisible(); // not sure if this is appropriate
     }
   }
   adjustMinimumX(value) {
@@ -386,6 +396,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.drawAxisX();
       this.drawPoints();
       this.drawLine();
+      this.checkAllPointsVisible(); // not sure if this is appropriate
     }
   }
 
@@ -404,6 +415,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.drawAxisY();
       this.drawPoints();
       this.drawLine();
+      this.checkAllPointsVisible(); // not sure if this is appropriate
     }
   }
   adjustMinimumY(value) {
@@ -415,6 +427,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.drawAxisY();
       this.drawPoints();
       this.drawLine();
+      this.checkAllPointsVisible(); // not sure if this is appropriate
     }
   }
 
@@ -433,6 +446,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.drawAxisX();
       this.drawPoints();
       this.drawLine();
+      this.checkAllPointsVisible(); // not sure if this is appropriate
     }
   }
   adjustMaximumX(value) {
@@ -444,6 +458,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.drawAxisX();
       this.drawPoints();
       this.drawLine();
+      this.checkAllPointsVisible(); // not sure if this is appropriate
     }
   }
 
@@ -462,6 +477,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.drawAxisY();
       this.drawPoints();
       this.drawLine();
+      this.checkAllPointsVisible(); // not sure if this is appropriate
     }
   }
   adjustMaximumY(value) {
@@ -473,6 +489,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.drawAxisY();
       this.drawPoints();
       this.drawLine();
+      this.checkAllPointsVisible(); // not sure if this is appropriate
     }
   }
 
@@ -616,10 +633,15 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
             const correctPoints = this.points.filter(p => p.isValid);
             if (correctPoints.length > 1) {
               this.line_points.add(epoint);
-              // TODO: emit selection event
+              this.setAction('grapherCurveAdded');
+              this.setInput(this.getEquation());
+              this.processAction();
               this.drawLine();
             } else {
-              // TODO: emit not enough points error
+              // "throw" error
+              this.setAction('grapherError');
+              this.setInput('curveNeedsMorePoints');
+              this.processAction(false, true);
             }
           } else {
             this.removePoint(point.x, point.y);
@@ -683,13 +705,13 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     }
   }
 
+  getEquation() {
+    return this.line_points.map(p=>`(${p.x},${p.y})`);
+  }
+
   _updateSAI() {
     this.setAction('Graph');
-    const equation = [];
-    if (this.line_points.size > 1) {
-      equation.push(this.equation(0));
-      equation.push(this.equation(1)-this.equation(0));
-    }
+    const equation = this.getEquation();
     this.setInput(JSON.stringify(
       {
         points: this.points.map(p=>p.toJSON()),
@@ -708,18 +730,39 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
 
   drawPoints() {
-    // TODO: indicate points that are not visible e.g. with
-    // .filter(d=>this.pPointVisible(d))
     if (this.chart === null) { return; }
     const tooltip = this._tooltip;
-    this.chart.selectAll('.CTATChart--point')
-      .data(this.points, d=>d)
+    const generator = d3.symbol().type(d3.symbolTriangle).size(40);
+    const diamond = generator();
+    this.chart.selectAll('.CTATChart--opoint')
+      .data(this.points.filter(p=>!this.pPointVisible(p)))
       .join(
-        enter => enter.append('circle')
+        enter => enter.append('path')
+          .classed('CTATChart--opoint', true)
+          .attr('transform', d =>
+                `translate(${bounded(d.x, this._x)},${bounded(d.y, this._y)})`)
+          .attr('d', diamond)
+          .attr('fill', 'lightgrey').attr('stroke', d => {
+            if (d.isCorrect) return 'limegreen';
+            if (d.isIncorrect) return 'red';
+            if (d.isHint) return 'yellow';
+            return 'black';
+          })
+          .attr('stroke-width', 1)
+          .style('opacity', 0.8),
+        update => update.transition().duration(500)
+          .attr('transform', d => 
+                `translate(${bounded(d.x, this._x)},${bounded(d.y, this._y)})`),
+        exit => exit.remove());
+    this.chart.selectAll('.CTATChart--point')
+      .data(this.points.filter(d=>this.pPointVisible(d)))
+      .join(
+        enter => {
+          enter.append('circle')
           .classed('CTATChart--point', true)
           .classed('CTAT--correct', d => d.isCorrect)
           .classed('CTAT--incorrect', d => d.isIncorrect)
-          .attr("cx", d => this._x(d.x))
+            .attr("cx", d => this._x(d.x))
           .attr("cy", d => this._y(d.y))
           .attr('r', d => d.r)
           .on('mouseover', () =>
@@ -729,14 +772,15 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
               .style('top', `${d3.event.pageY-d.r-12}px`)
              )
           .on('mouseleave', () =>
-              tooltip.transition().duration(200).style('opacity', 0)),
+              tooltip.transition().duration(200).style('opacity', 0));
+        },
         update => update.call(
           update => update
             .classed('CTAT--incorrect', d => d.isIncorrect)
             .classed('CTAT--correct', d => d.isCorrect)
             .transition().duration(500)
             .attr('cx', d => this._x(d.x))
-            .attr("cy", d => this._y(d.y))),
+            .attr('cy', d => this._y(d.y))),
         exit => exit.remove());
   }
 
@@ -785,7 +829,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (this._line === null) { return; }
     //const correctPoints = this.points.filter(p => p.isCorrect);
     const lines = [];
-    console.log(this.line_points);
+    //console.log(this.line_points);
     if (this.line_points.size > 1) {
       const correctPoints = [...this.line_points];
       lines.push(this.boundedLine(correctPoints));
@@ -817,7 +861,16 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this.drawLine();
   }
 
+  grapherCurveAdded(/*input*/) {
+    //TODO
+    // parse input
+    this.drawLine();
+  }
   pPointVisible(p) {
+    console.log(p, p.x >= this.dataMinimumX
+      && p.x <= this.dataMaximumX
+      && p.y >= this.dataMinimumY
+                && p.y <= this.dataMaximumY);
     return p.x >= this.dataMinimumX
       && p.x <= this.dataMaximumX
       && p.y >= this.dataMinimumY
@@ -826,6 +879,18 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   pAllPointsVisible() {
     return this.points.every(
       p => this.pPointVisible(p));
+  }
+  checkAllPointsVisible() {
+    if (!this.pAllPointsVisible()) {
+      // "throw" error
+      this.setAction('grapherError');
+      this.setInput('PointOutOfBounds');
+      this.processAction(false, true);
+    }
+  }
+  grapherError(/*type*/) {
+    // highlight axes bounds on PointOutOfBounds?
+    return;
   }
 
   handleAction(evt) {

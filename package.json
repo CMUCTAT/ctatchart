@@ -30,6 +30,7 @@
   },
   "homepage": "https://gitlab.com/RingenbergCTAT/ctatchart#readme",
   "dependencies": {
+    "@babel/compat-data": "^7.9.0",
     "d3": "^5.15.1",
     "jquery": "^3.5.0"
   },
