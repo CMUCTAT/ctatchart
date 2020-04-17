@@ -706,7 +706,11 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
 
   getEquation() {
-    return this.line_points.map(p=>`(${p.x},${p.y})`);
+    let equation = [];
+    for (let p of this.line_points) {
+      equation.push(`(${p.x},${p.y})`);
+    }
+    return equation;
   }
 
   _updateSAI() {
