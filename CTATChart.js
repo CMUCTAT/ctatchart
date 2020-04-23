@@ -165,6 +165,10 @@ class Point {
       return new Point(Number(parse[1]), Number(parse[2]));
     }
   }
+  static fromJSON(str) {
+    const parse = JSON.parse(str);
+    return new Point(parse.x, parse.y);
+  }
 }
 
 export default class CTATChart extends CTAT.Component.Base.Tutorable {
@@ -211,6 +215,9 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       vx = this.closestXtick(vx);
       vy = this.closestYtick(vy);
     }
+    if (this.dataLineSnapping && this.line_points.size > 1) {
+      vy = this.equation(vx);
+    }
     return new Point(vx, vy);
   }
   /**
@@ -234,6 +241,14 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
   set dataIsSnapping(val) {
     this.getDivWrap().setAttribute('data-ctat-snapping', `${val}`);
+  }
+
+  get dataLineSnapping() {
+    const snap = this.getDivWrap().getAttribute('data-ctat-line-snapping');
+    return snap ? CTATGlobalFunctions.stringToBoolean(snap) : true;
+  }
+  set dataLineSnapping(val) {
+    this.getDivWrap().setAttribute('data-ctat-line-snapping', `${val}`);
   }
 
   /**
@@ -634,7 +649,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
             if (correctPoints.length > 1) {
               this.line_points.add(epoint);
               this.setAction('grapherCurveAdded');
-              this.setInput(this.getEquation());
+              this.setInput(JSON.stringify(this.getEquation()));
               this.processAction();
               this.drawLine();
             } else {
@@ -649,7 +664,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
         } else {
           this.addPoint(point.x, point.y);
           this.setAction('grapherPointAdded');
-          this.setInput(point.toString());
+          this.setInput(JSON.stringify(point.toJSON()));
           this.processAction();
         }
       }
@@ -708,7 +723,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   getEquation() {
     let equation = [];
     for (let p of this.line_points) {
-      equation.push(`(${p.x},${p.y})`);
+      equation.push(p.toJSON());
     }
     return equation;
   }
@@ -827,6 +842,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       x2 = this.equation.invert(this.dataMaximumY);
       y2 = this.dataMaximumY;
     }
+    this.equation.domain([x1, x2]).range([y1, y2]).clamp();
     return [{x: x1, y: y1}, {x: x2, y: y2}]
   }
   drawLine() {
@@ -871,10 +887,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this.drawLine();
   }
   pPointVisible(p) {
-    console.log(p, p.x >= this.dataMinimumX
-      && p.x <= this.dataMaximumX
-      && p.y >= this.dataMinimumY
-                && p.y <= this.dataMaximumY);
     return p.x >= this.dataMinimumX
       && p.x <= this.dataMaximumX
       && p.y >= this.dataMinimumY
@@ -946,7 +958,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const action = aSAI.getAction();
     switch (action) {
     case "grapherPointAdded": {
-      const point = Point.fromString(aSAI.getInput());
+      const point = Point.fromJSON(aSAI.getInput());
       const last_point = this.points[this.points.length-1];
       last_point.state = STATE.CORRECT;
       last_point.x = point.x;
@@ -956,6 +968,10 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.drawLine();
       break;
     }
+    case "grapherCurveAdded":
+      this.line_points = JSON.parse(aSAI.getInput());
+      break;
+
     case "ChangeUpperHorizontalBoundary":
       this.dataCtrlMaximumX.forEach(c => set_correct(c, aSAI));
       break;
@@ -988,7 +1004,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const action = aSAI.getAction();
     switch (action) {
     case "grapherPointAdded": {
-      const point = Point.fromString(aSAI.getInput());
+      const point = Point.fromJSON(aSAI.getInput());
       const last_point = this.points[this.points.length-1];
       last_point.state = STATE.UNGRADED;
       last_point.x = point.x;
@@ -998,6 +1014,10 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.drawPoints();
       break;
     }
+    case "grapherCurveAdded":
+      this.line_points = JSON.parse(aSAI.getInput());
+      break;
+      
     case "ChangeUpperHorizontalBoundary":
       this.dataCtrlMaximumX.forEach(c => set_incorrect(c, aSAI));
       break;

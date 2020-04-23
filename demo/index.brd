@@ -57,7 +57,7 @@
                         <value>grapherPointAdded</value>
                     </Action>
                     <Input>
-                        <value>(5,5)</value>
+                        <value>{"x":5,"y":5}</value>
                     </Input>
                     <transaction_id>Tb46fae4b-879d-42a4-9e97-01949da677da</transaction_id>
                 </properties>
@@ -85,7 +85,7 @@
                 <Input>
                     <matcher>
                         <matcherType>ExactMatcher</matcherType>
-                        <matcherParameter name="single">(5,5)</matcherParameter>
+                        <matcherParameter name="single">{"x":5,"y":5}</matcherParameter>
                     </matcher>
                 </Input>
                 <Actor linkTriggered="false">Student</Actor>
@@ -117,7 +117,7 @@
                         <value>grapherPointAdded</value>
                     </Action>
                     <Input>
-                        <value>(7,6)</value>
+                        <value>{"x":7,"y":6}</value>
                     </Input>
                     <transaction_id>Tb46fae4b-879d-42a4-9e97-01949da677da</transaction_id>
                 </properties>
@@ -145,7 +145,7 @@
                 <Input>
                     <matcher>
                         <matcherType>ExactMatcher</matcherType>
-                        <matcherParameter name="single">(7,6)</matcherParameter>
+                        <matcherParameter name="single">{"x":7,"y":6}</matcherParameter>
                     </matcher>
                 </Input>
                 <Actor linkTriggered="false">Student</Actor>
