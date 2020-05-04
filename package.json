@@ -30,15 +30,15 @@
   },
   "homepage": "https://gitlab.com/RingenbergCTAT/ctatchart#readme",
   "dependencies": {
-    "@babel/compat-data": "^7.9.0",
+    "@babel/compat-data": "^7.9.6",
     "d3": "^5.16.0",
     "jquery": "^3.5.0"
   },
   "devDependencies": {
-    "ava": "^3.7.1",
+    "ava": "^3.8.1",
     "browser-env": "^3.3.0",
     "eslint": "^6.8.0",
     "parcel": "^1.12.4",
-    "puppeteer": "^3.0.1"
+    "puppeteer": "^3.0.2"
   }
 }
