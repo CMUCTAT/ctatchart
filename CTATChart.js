@@ -881,21 +881,24 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this.drawLine();
   }
 
-  grapherCurveAdded(/*input*/) {
-    //TODO
-    // parse input
+  grapherCurveAdded(equation) {
+    this.line_points =
+      new Set(JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y)));
     this.drawLine();
   }
+
   pPointVisible(p) {
     return p.x >= this.dataMinimumX
       && p.x <= this.dataMaximumX
       && p.y >= this.dataMinimumY
       && p.y <= this.dataMaximumY;
   }
+
   pAllPointsVisible() {
     return this.points.every(
       p => this.pPointVisible(p));
   }
+
   checkAllPointsVisible() {
     if (!this.pAllPointsVisible()) {
       // "throw" error
@@ -904,6 +907,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.processAction(false, true);
     }
   }
+
   grapherError(/*type*/) {
     // highlight axes bounds on PointOutOfBounds?
     return;
@@ -958,6 +962,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const action = aSAI.getAction();
     switch (action) {
     case "grapherPointAdded": {
+      console.log(aSAI.getInput());
       const point = Point.fromJSON(aSAI.getInput());
       const last_point = this.points[this.points.length-1];
       last_point.state = STATE.CORRECT;
@@ -969,7 +974,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       break;
     }
     case "grapherCurveAdded":
-      this.line_points = JSON.parse(aSAI.getInput());
+      this.line_points =
+        new Set(JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y)));
       break;
 
     case "ChangeUpperHorizontalBoundary":
@@ -1000,6 +1006,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       console.error(`Unhandled correct Action "${action}" for ${this.getName()}`);
     }
   }
+
   _showInCorrect(aSAI) {
     const action = aSAI.getAction();
     switch (action) {
@@ -1015,7 +1022,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       break;
     }
     case "grapherCurveAdded":
-      this.line_points = JSON.parse(aSAI.getInput());
+      this.line_points =
+        new Set(JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y)));
       break;
       
     case "ChangeUpperHorizontalBoundary":
