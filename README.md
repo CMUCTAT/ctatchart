@@ -16,7 +16,7 @@ To install this library using npm:
 ```npm install --save gitlab:RingenbergCTAT/ctatchart```
 
 ## Usage
-As this component uses #S6 modules, using a cross-compiler might be required.
+As this component uses ES6 modules, using a cross-compiler might be required.
 Add the following to the custom javascript file:
 ```export { default as CTATChart } from 'ctatchart';```
 As `CTATChart` registers itself with CTAT, exporting is not strictly necessary,

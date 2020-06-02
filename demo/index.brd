@@ -206,7 +206,7 @@
                         <value>chart1</value>
                     </Selection>
                     <Action>
-                        <value>grapherPointAdded</value>
+                        <value>AddPoint</value>
                     </Action>
                     <Input>
                         <value>{"x":7,"y":6}</value>
@@ -231,7 +231,7 @@
                 <Action>
                     <matcher>
                         <matcherType>ExactMatcher</matcherType>
-                        <matcherParameter name="single">grapherPointAdded</matcherParameter>
+                        <matcherParameter name="single">AddPoint</matcherParameter>
                     </matcher>
                 </Action>
                 <Input>
@@ -566,7 +566,7 @@
                         <value>chart1</value>
                     </Selection>
                     <Action>
-                        <value>grapherPointAdded</value>
+                        <value>AddPoint</value>
                     </Action>
                     <Input>
                         <value>{"x":5,"y":5}</value>
@@ -591,7 +591,7 @@
                 <Action>
                     <matcher>
                         <matcherType>ExactMatcher</matcherType>
-                        <matcherParameter name="single">grapherPointAdded</matcherParameter>
+                        <matcherParameter name="single">AddPoint</matcherParameter>
                     </matcher>
                 </Action>
                 <Input>
@@ -866,7 +866,7 @@
                         <value>chart1</value>
                     </Selection>
                     <Action>
-                        <value>grapherCurveAdded</value>
+                        <value>AddLine</value>
                     </Action>
                     <Input>
                         <value>[{"x":5,"y":5},{"x":7,"y":6}]</value>
@@ -891,7 +891,7 @@
                 <Action>
                     <matcher>
                         <matcherType>ExactMatcher</matcherType>
-                        <matcherParameter name="single">grapherCurveAdded</matcherParameter>
+                        <matcherParameter name="single">AddLine</matcherParameter>
                     </matcher>
                 </Action>
                 <Input>
@@ -985,7 +985,7 @@
                         <value>chart1</value>
                     </Selection>
                     <Action>
-                        <value>grapherPointAdded</value>
+                        <value>AddPoint</value>
                     </Action>
                     <Input>
                         <value>{"x":9,"y":7}</value>
@@ -1010,7 +1010,7 @@
                 <Action>
                     <matcher>
                         <matcherType>ExactMatcher</matcherType>
-                        <matcherParameter name="single">grapherPointAdded</matcherParameter>
+                        <matcherParameter name="single">AddPoint</matcherParameter>
                     </matcher>
                 </Action>
                 <Input>
@@ -1105,7 +1105,7 @@
                         <value>chart2</value>
                     </Selection>
                     <Action>
-                        <value>grapherPointAdded</value>
+                        <value>AddPoint</value>
                     </Action>
                     <Input>
                         <value>{"x":5,"y":5}</value>
@@ -1130,7 +1130,7 @@
                 <Action>
                     <matcher>
                         <matcherType>ExactMatcher</matcherType>
-                        <matcherParameter name="single">grapherPointAdded</matcherParameter>
+                        <matcherParameter name="single">AddPoint</matcherParameter>
                     </matcher>
                 </Action>
                 <Input>
@@ -1164,7 +1164,7 @@
                         <value>chart2</value>
                     </Selection>
                     <Action>
-                        <value>grapherPointAdded</value>
+                        <value>AddPoint</value>
                     </Action>
                     <Input>
                         <value>{"x":7,"y":6}</value>
@@ -1189,7 +1189,7 @@
                 <Action>
                     <matcher>
                         <matcherType>ExactMatcher</matcherType>
-                        <matcherParameter name="single">grapherPointAdded</matcherParameter>
+                        <matcherParameter name="single">AddPoint</matcherParameter>
                     </matcher>
                 </Action>
                 <Input>
@@ -1283,7 +1283,7 @@
                         <value>chart1</value>
                     </Selection>
                     <Action>
-                        <value>grapherPointAdded</value>
+                        <value>AddPoint</value>
                     </Action>
                     <Input>
                         <value>{"x":1,"y":3}</value>
@@ -1308,7 +1308,7 @@
                 <Action>
                     <matcher>
                         <matcherType>ExactMatcher</matcherType>
-                        <matcherParameter name="single">grapherPointAdded</matcherParameter>
+                        <matcherParameter name="single">AddPoint</matcherParameter>
                     </matcher>
                 </Action>
                 <Input>
@@ -1403,7 +1403,7 @@
                         <value>chart1</value>
                     </Selection>
                     <Action>
-                        <value>grapherPointAdded</value>
+                        <value>AddPoint</value>
                     </Action>
                     <Input>
                         <value>{"x":3,"y":4}</value>
@@ -1428,7 +1428,7 @@
                 <Action>
                     <matcher>
                         <matcherType>ExactMatcher</matcherType>
-                        <matcherParameter name="single">grapherPointAdded</matcherParameter>
+                        <matcherParameter name="single">AddPoint</matcherParameter>
                     </matcher>
                 </Action>
                 <Input>

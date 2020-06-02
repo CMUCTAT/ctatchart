@@ -79,7 +79,6 @@
 
 circle.CTATChart--point {
     fill: black;
-    stroke-width: 0px;
     /*stroke: transparent;*/
 }
 circle.CTATChart--point.CTAT--incorrect {
@@ -96,3 +95,7 @@ circle.CTATChart--point.CTAT--correct {
 /*.CTATChart--grid .tick {
     opacity: 0.1;
 }*/
+
+.CTATChart g.tick text {
+    user-select: none;
+}
