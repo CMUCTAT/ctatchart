@@ -1,6 +1,4 @@
 .CTATChart {
-    width: 400px;
-    height: 300px;
     flex: none;
 }
 
@@ -75,27 +73,4 @@
 .CTATSubmitButton>button.CTAT--incorrect::after {
     color: red;
     content: " \2717";
-}
-
-circle.CTATChart--point {
-    fill: black;
-    /*stroke: transparent;*/
-}
-circle.CTATChart--point.CTAT--incorrect {
-    fill: red;
-    /*stroke: rgba(255,50,50,0.6);*/
-    fill-opacity: 0.7;
-}
-circle.CTATChart--point.CTAT--correct {
-    /*stroke: rgba(0,240,0,0.7);*/
-    fill: limegreen;
-    fill-opacity: 0.7;
-}
-
-/*.CTATChart--grid .tick {
-    opacity: 0.1;
-}*/
-
-.CTATChart g.tick text {
-    user-select: none;
 }

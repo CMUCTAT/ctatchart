@@ -36,6 +36,7 @@
 /*global CTAT CTATGlobalFunctions CTATSAI CTATConfiguration:true*/
 import * as d3 from 'd3';
 import $ from 'jquery';
+import './CTATChart.css';
 
 /**
  * Find the item in the array with the closest value to the one given.
@@ -63,6 +64,27 @@ function bounded(value, axis) {
   axis.clamp(c);
   return v;
 }
+
+function direction(point, x, y) {
+  if (point.x < x[0]) {
+    if (point.y < y[0]) {
+      return -135; // cos(point, lower-left-corner?
+    } else if (point.y > y[1]) {
+      return -45; // cos(point, upper-left-corner?
+    }
+    return -90;
+  } else if (point.x > x[1]) {
+    if (point.y < y[0]) {
+      return 135;
+    } else if (point.y > y[1]) {
+      return 45;
+    }
+    return 90;
+  } else if (point.y < y[0]) {
+    return 180;
+  } // greater than max y or default
+  return 0;
+}  
 
 /**
  * Get the name of the controller component depending on the type of aComponent.
@@ -797,61 +819,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .attr('transform', `translate(${this.margin.left},0)`);
     this.drawAxisX();
     this.drawAxisY();
-    this._line = svg.append('g').classed('CTATChart--line', true);
-    this._chart = svg.append('g').classed('CTATChart--points', true);
-    this.drawPoints();
-    this.drawLine();
-    const add_point = (x,y) => {
-      if (this.getEnabled()) {
-        const point = this.getValueForPixel(x,y);
-        if (this.isPoint(point.x, point.y)) {
-          if (this.dataLineDrawingEnabled) {
-            const epoint = this.points.find(p => p.at(point.x, point.y));
-            if (epoint.isValid) {
-              const correctPoints = this.points.filter(p => p.isValid);
-              if (correctPoints.length >= 2) {
-                const inline = this.line_points.some(point => point.at(epoint.x,epoint.y));
-                console.log('inline', inline);
-                if (inline) {
-                  this.line_points = this.line_points.filter(p => !p.at(epoint.x,epoint.y));
-                  console.log('red', this.line_points);
-                  this.drawLine();
-                } else {
-                  this.line_points.push(epoint);
-                  if (this.line_points.length >= 2) {
-                    this.setAction('AddLine');
-                    this.setInput(JSON.stringify(this.getEquation()));
-                    this.processAction();
-                    this.drawLine();
-                  }
-                }
-              } else {
-                // "throw" error
-                this.setAction('grapherError');
-                this.setInput('curveNeedsMorePoints');
-                this.processAction(false, true);
-              }
-            }
-          } else {
-            this.removePoint(point.x, point.y);
-          }
-        } else {
-          console.log('Adding new point:', point);
-          this.addPoint(point.x, point.y);
-          this.setAction('AddPoint');
-          this.setInput(JSON.stringify(point.toJSON()));
-          this.processAction();
-        }
-      }
-    };
-    svg.on('click', function() {
-      const coords = d3.mouse(this);
-      add_point(coords[0], coords[1]);
-    });
-
     const cursor = svg.append('g').classed('CTATChart--cursor', true)
-          .append('circle')
-          .style('fill', 'black').attr('r', 3).style('opacity', 0);
+          .append('circle').attr('r', 3);
     const mousemove = (x,y) => {
       if (this.getEnabled()) {
         const point = this.getValueForPixel(x,y);
@@ -887,6 +856,58 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     svg.on('mouseover',
            () => this.getEnabled() && cursor.style('opacity', 0.2));
     svg.on('mouseleave', () => cursor.style('opacity', 0));
+
+    this._line = svg.append('g').classed('CTATChart--line', true);
+    this._chart = svg.append('g').classed('CTATChart--points', true);
+    this.drawPoints();
+    this.drawLine();
+    const add_point = (x,y) => {
+      if (this.getEnabled()) {
+        const point = this.getValueForPixel(x,y);
+        if (this.isPoint(point.x, point.y)) {
+          const epoint = this.points.find(p => p.at(point.x, point.y));
+          if (epoint.isValid) {
+            if (this.dataLineDrawingEnabled) {
+              const correctPoints = this.points.filter(p => p.isValid);
+              if (correctPoints.length >= 2) {
+                const inline = this.line_points.some(
+                  point => point.at(epoint.x,epoint.y));
+                if (inline) {
+                  this.line_points = this.line_points.filter(
+                    p => !p.at(epoint.x,epoint.y));
+                  this.drawLine();
+                } else {
+                  this.line_points.push(epoint);
+                  if (this.line_points.length >= 2) {
+                    this.setAction('AddLine');
+                    this.setInput(JSON.stringify(this.getEquation()));
+                    this.processAction();
+                    this.drawLine();
+                  }
+                }
+              } else {
+                // "throw" error
+                this.setAction('grapherError');
+                this.setInput('curveNeedsMorePoints');
+                this.processAction(false, true);
+              }
+            }
+          } else {
+            this.removePoint(point.x, point.y);
+          }
+        } else {
+          //console.log('Adding new point:', point);
+          this.addPoint(point.x, point.y);
+          this.setAction('AddPoint');
+          this.setInput(JSON.stringify(point.toJSON()));
+          this.processAction();
+        }
+      }
+    };
+    svg.on('click', function() {
+      const coords = d3.mouse(this);
+      add_point(coords[0], coords[1]);
+    });
 
     // Add listener for controller events.
     if (!CTATConfiguration.get('previewMode')) {
@@ -929,57 +950,44 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   drawPoints() {
     if (this.chart === null) { return; }
     const tooltip = this._tooltip;
-    const generator = d3.symbol().type(d3.symbolTriangle).size(40);
-    const diamond = generator();
-    this.chart.selectAll('.CTATChart--out-of-bounds')
-      .data(this.points.filter(p=>!this.pPointVisible(p)))
+    // TODO: maybe parameterize size of points.
+    const diamond = d3.symbol().type(d3.symbolTriangle).size(40);
+    const circle = d3.symbol().type(d3.symbolCircle).size(40);
+    const dir = p => direction(p,
+                               [this.dataMinimumX, this.dataMaximumX],
+                               [this.dataMinimumY, this.dataMaximumY]);
+    const bx = p => bounded(p.x, this._x);
+    const by = p => bounded(p.y, this._y);
+    const transform = d => `rotate(${dir(d)}, ${bx(d)}, ${by(d)}) translate(${bx(d)}, ${by(d)})`;
+    this.chart.selectAll('.CTATChartPoint')
+      .data(this.points)
       .join(
         enter => enter.append('path')
-          .classed('CTATChart--out-of-bounds', true)
-          .attr('transform', d =>
-                `translate(${bounded(d.x, this._x)},${bounded(d.y, this._y)})`)
-          .attr('d', diamond)
-          .attr('fill', 'lightgrey').attr('stroke', d => {
-            if (d.isCorrect) return 'limegreen';
-            if (d.isIncorrect) return 'red';
-            if (d.isHint) return 'yellow';
-            return 'black';
-          })
-          .attr('stroke-width', 1)
-          //.style('filter', 'url(#glow)')
-          .style('opacity', 0.8),
-        update => update.transition().duration(500)
-          .attr('transform', d => 
-                `translate(${bounded(d.x, this._x)},${bounded(d.y, this._y)})`),
-        exit => exit.remove());
-    this.chart.selectAll('.CTATChart--point')
-      .data(this.points.filter(d=>this.pPointVisible(d)))
-      .join(
-        enter => {
-          enter.append('circle')
-            .classed('CTATChart--point', true)
-            .classed('CTAT--correct', d => d.isCorrect)
-            .classed('CTAT--incorrect', d => d.isIncorrect)
-            //.style('filter', 'url(#glow)')
-            .attr("cx", d => this._x(d.x))
-            .attr("cy", d => this._y(d.y))
-            .attr('r', d => d.r)
-            .on('mouseover', () =>
-                tooltip.transition().duration(200).style('opacity', 1))
-            .on('mousemove', d => tooltip.html(d.toString())
-                .style('left', `${d3.event.pageX+d.r+3}px`)
-                .style('top', `${d3.event.pageY-d.r-12}px`)
-               )
-            .on('mouseleave', () =>
-                tooltip.transition().duration(200).style('opacity', 0));
-        },
-        update => update.call(
-          update => update
-            .classed('CTAT--incorrect', d => d.isIncorrect)
-            .classed('CTAT--correct', d => d.isCorrect)
-            .transition().duration(500)
-            .attr('cx', d => this._x(d.x))
-            .attr('cy', d => this._y(d.y))),
+          .classed('CTATChartPoint', true)
+          .classed('CTATChart--point', d=>this.pPointVisible(d))
+          .classed('CTATChart--out-of-bounds', d=>!this.pPointVisible(d))
+          .classed('CTAT--correct', d => d.isCorrect)
+          .classed('CTAT--incorrect', d => d.isIncorrect)
+          .classed('CTAT--hint', d => d.isHint)
+          .attr('d', d => this.pPointVisible(d)?circle:diamond)
+          .attr('transform', transform)
+          .on('mouseover', () =>
+              tooltip.transition().duration(200).style('opacity', 1))
+          .on('mousemove', d => tooltip.html(d.toString())
+              .style('left', `${d3.event.pageX+d.r+3}px`)
+              .style('top', `${d3.event.pageY-d.r-12}px`)
+             )
+          .on('mouseleave', () =>
+              tooltip.transition().duration(200).style('opacity', 0)),
+        update => update
+          .classed('CTATChart--point', d=>this.pPointVisible(d))
+          .classed('CTATChart--out-of-bounds', d=>!this.pPointVisible(d))
+          .classed('CTAT--correct', d => d.isCorrect)
+          .classed('CTAT--incorrect', d => d.isIncorrect)
+          .classed('CTAT--hint', d => d.isHint)
+          .attr('d', d => this.pPointVisible(d)?circle():diamond())
+          .transition().duration(500)
+          .attr('transform', transform),
         exit => exit.remove());
   }
 
