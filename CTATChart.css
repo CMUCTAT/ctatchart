@@ -9,11 +9,13 @@
 }
 .CTATChart path.CTATChart--point {
     fill: black;
+    stroke-width: 2;
     /*stroke: transparent;*/
 }
 .CTATChart path.CTATChart--point.CTAT--hint {
     fill: yellow;
     /*stroke: rgba(255,50,50,0.6);*/
+    stroke: yellow;
     fill-opacity: 0.7;
 }
 .CTATChart path.CTATChart--point.CTAT--incorrect {
@@ -23,7 +25,8 @@
 }
 .CTATChart path.CTATChart--point.CTAT--correct {
     /*stroke: rgba(0,240,0,0.7);*/
-    fill: limegreen;
+    stroke: limegreen;
+    /*fill: limegreen;*/
     fill-opacity: 0.7;
 }
 
@@ -35,9 +38,12 @@
 }
 .CTATChart path.CTATChart--out-of-bounds.CTAT--hint {
     stroke: yellow;
+    fill: yellow;
 }
 .CTATChart path.CTATChart--out-of-bounds.CTAT--incorrect {
     stroke: red;
+    stroke-dasharray: 5 5;
+    stroke-width: 2;
 }
 .CTATChart path.CTATChart--out-of-bounds.CTAT--correct {
     stroke: limegreen;
@@ -48,4 +54,19 @@
 
 .CTATChart g.tick text {
     user-select: none;
+}
+
+.CTATChart line.CTATChart--spline {
+    stroke-width: 2;
+    stroke: black;
+}
+.CTATChart line.CTATChart--spline.CTAT--hint {
+    stroke: yellow;
+}
+.CTATChart line.CTATChart--spline.CTAT--incorrect {
+    stroke: red;
+    stroke-dasharray: 5 5;
+}
+.CTATChart line.CTATChart--spline.CTAT--correct {
+    stroke: limegreen;
 }

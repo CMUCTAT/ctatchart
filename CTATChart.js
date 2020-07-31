@@ -65,6 +65,13 @@ function bounded(value, axis) {
   return v;
 }
 
+/**
+ * Returns which direction a off screen pointer should point.
+ * @param point: Point
+ * @param x: [number, number] - lower and upper bounds on the X axis.
+ * @param y: [number, number] - lower and upper bounds on the Y axis.
+ * @returns :number - direction in degrees.
+ */
 function direction(point, x, y) {
   if (point.x < x[0]) {
     if (point.y < y[0]) {
@@ -166,18 +173,9 @@ const STATE = {
 }
 /** Set of states that are "valid" */
 const VALID_STATES = new Set([STATE.CORRECT, STATE.UNGRADED]);
-/** Represents a point in the graph */
-class Point {
-  /**
-   * @param x: number (default=0) - x coordinate value
-   * @param y: number (default=0) - y coordinate value
-   * @param state: STATE (default=STATE.UNGRADED) - current tutor state
-   */
-  constructor(x, y, state) {
-    this.x = x || 0;
-    this.y = y || 0;
-    this.state = state || STATE.UNGRADED;
-    this.r = 4; // radius of the point.
+class Graded {
+  constructor(state) {
+    this. state = state || STATE.UNGRADED;
   }
   /**
    * If the point has a state that allows it to be used in line drawing.
@@ -203,6 +201,21 @@ class Point {
    */
   get isHint() {
     return this.state == STATE.HINT;
+  }
+}
+  
+/** Represents a point in the graph */
+class Point extends Graded {
+  /**
+   * @param x: number (default=0) - x coordinate value
+   * @param y: number (default=0) - y coordinate value
+   * @param state: STATE (default=STATE.UNGRADED) - current tutor state
+   */
+  constructor(x, y, state) {
+    super(state);
+    this.x = x || 0;
+    this.y = y || 0;
+    this.r = 4; // radius of the point.
   }
   /**
    * Test if this point is at the given coordinate values.
@@ -249,6 +262,61 @@ class Point {
   }
 }
 
+class Line extends Graded {
+  constructor(...points) {
+    super();
+    this.points = points;
+    this.equation = d3.scaleLinear();
+  }
+  get project() {
+    if (this.points.length < 2) {
+      return d3.scaleLinear().domain([0,1]).range([Infinity, Infinity]);
+    }
+    return d3.scaleLinear().domain([this.points[0].x, this.points[1].x])
+      .range([this.points[0].y, this.points[1].y]);
+  }
+  get vector() {
+    const mx = this.project;
+    return [mx(0), mx(1) - mx(0)];
+  }
+  toJSON() {
+    return this.points.map(p => p.toJSON());
+  }
+  static fromJSON(str) {
+    const parse = JSON.parse(str);
+    return new Line(...parse.map(p => new Point(p.x, p.y)));
+  }
+  equals(line) {
+    console.log(this, line);
+    console.log(this.vector, line.vector);
+    const a = this.vector;
+    const b = line.vector;
+    const e = 0.0001;
+    return (Math.abs(a[0] - b[0]) < e) && (Math.abs(a[1] - b[1]) < e);
+  }
+}
+
+/** Object used in association with d3.symbol() to make an X */
+const customSymbolX = {
+  draw: function(context, size) {
+    const r = Math.sqrt(size / 5) / 2;
+    const lr = Math.sin(Math.PI / 4) * 3 * r;
+    context.moveTo(-r, 0);
+    context.lineTo(-lr - r, -lr);
+    context.lineTo(-lr, -lr - r);
+    context.lineTo(0, -r);
+    context.lineTo(lr, -lr - r);
+    context.lineTo(lr + r, -lr);
+    context.lineTo(r, 0);
+    context.lineTo(lr + r, lr);
+    context.lineTo(lr, lr + r);
+    context.lineTo(0, r);
+    context.lineTo(-lr, lr + r);
+    context.lineTo(-lr - r, lr);
+    context.closePath();
+  }
+}
+
 /** A CTAT tutorable component for interacting with a two dimensional chart. */
 export default class CTATChart extends CTAT.Component.Base.Tutorable {
   constructor () {
@@ -256,9 +324,10 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this.margin = {top: 10, right: 10, bottom: 30, left: 30};
 
     // data
-    this.points = [];
-    this.line_points = [];
+    this.points = []; // : Point[]
+    this.line_points = []; //: Point[]
     this.equation = d3.scaleLinear();
+    this.lines = []; //: Point[][]
     this._x = d3.scaleLinear();
     this._y = d3.scaleLinear();
     this._xAxisCall = d3.axisBottom();
@@ -273,6 +342,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this._yAxisGrid = null;
     this._line = null;
     this._chart = null;
+    this.point_size = 50;
 
     // need to clobber parent methods here.
     this.init = this._init;
@@ -300,9 +370,10 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       vx = this.closestXtick(vx);
       vy = this.closestYtick(vy);
     }
-    if (this.dataLineSnapping && this.line_points.length > 1) {
+    if (this.dataLineSnapping && this.lines.length > 1) {
       // if line snapping, get closest projected value.
-      vy = this.equation(vx);
+      vy = this.lines.map(l => l.project(vx)).reduce((m, cur) => Math.abs(cur - vy) < Math.abs(m - vy) ? cur : m)
+      //vy = this.equation(vx);
     }
     return new Point(vx, vy);
   }
@@ -727,12 +798,17 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           width = rect.width,
           height = rect.height;
     const tran = d3.transition().duration(500);
-    this._x.domain([this.dataMinimumX, this.dataMaximumX]).nice()
+    this._x.domain([this.dataMinimumX, this.dataMaximumX])//.nice()
       .range([this.margin.left, width - this.margin.right]);
     // TODO: tick values will need a different end value for fractional steps
-    const ticks = d3.range(this.dataMinimumX,
-                           this.dataMaximumX + 1,
-                           this.dataStepX);
+    const delta = this.dataStepX;
+    const ticks = d3.range(-delta, this.dataMinimumX - delta, -delta)
+          .reverse()
+          .concat(d3.range(0, this.dataMaximumX + delta, delta))
+          .filter(v => v <= this.dataMaximumX && v >= this.dataMinimumX);
+    //const ticks = d3.range(this.dataMinimumX,
+    //                       this.dataMaximumX + 1,
+    //                       this.dataStepX);
     this._xAxisGrid
       .transition(tran)
       .call(this._xAxisGridCall.scale(this._x).tickValues(ticks)
@@ -741,8 +817,27 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .call(g => g.selectAll('.tick').attr('opacity', 0.1))
       .call(g => g.selectAll('.domain').attr('opacity', 0))
       .call(g => g.selectAll('.domain').remove());
+    //console.log(this._y(0));
     this._xAxis.transition(tran)
+      //.call(g => g.attr('transform', `translate(0,${this._y(0)})`))
       .call(this._xAxisCall.scale(this._x).tickValues(ticks));
+    /*this._xAxisGrid.selectAll('CTATChart--0axis')
+      .data([0])
+      .join(
+        enter => enter.append('line').classed('CTATChart--0axis', true)
+          .attr('stroke-width', 5).attr('stroke', 'pink')
+          .attr('x1', d=>this._x(d))
+          .attr('x2', d=>this._x(d))
+          .attr('y1', -height+this.margin.top+this.margin.bottom)
+          .attr('y2', 0),
+        update => update.call(
+          up => up
+            .transition().duration(500)
+            .attr('x1', d=>this._x(d))
+            .attr('x2', d=>this._x(d))
+            .attr('y1', -height+this.margin.top+this.margin.bottom)
+            .attr('y2', 0)),
+        exit => exit.remove());*/
   }
   /** Render the y axis. */
   drawAxisY() {
@@ -751,11 +846,16 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           width = rect.width,
           height = rect.height;
     const tran = d3.transition().duration(500);
-    this._y.domain([this.dataMinimumY, this.dataMaximumY]).nice()
+    this._y.domain([this.dataMinimumY, this.dataMaximumY])//.nice()
       .range([height - this.margin.bottom, this.margin.top]);
-    const ticks = d3.range(this.dataMinimumY,
-                           this.dataMaximumY + 1,
-                           this.dataStepY);
+    const delta = this.dataStepY;
+    const ticks = d3.range(-delta, this.dataMinimumY - delta, -delta)
+          .reverse()
+          .concat(d3.range(0, this.dataMaximumY + delta, delta))
+          .filter(v => v <= this.dataMaximumY && v >= this.dataMinimumY);
+    //const ticks = d3.range(this.dataMinimumY,
+    //                       this.dataMaximumY + 1,
+    //                       this.dataStepY);
     this._yAxisGrid.transition(tran)
       .call(this._yAxisGridCall.scale(this._y).tickValues(ticks)
             .tickSize(-width+(this.margin.right+this.margin.left))
@@ -798,6 +898,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           width = rect.width,
           height = rect.height;
     const svg = dga.append('svg').attr("viewBox", [0, 0, width, height]);
+    svg.attr('role', 'group');
+    svg.append('title', 'CTAT interactive two dimentional chart');
     /*const defs = svg.append('defs');
     const filter = defs.append('filter').attr('id', 'glow');
     filter.append('feGaussianBlur').attr('stdDeviation', '3.5')
@@ -820,33 +922,36 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this.drawAxisX();
     this.drawAxisY();
     const cursor = svg.append('g').classed('CTATChart--cursor', true)
-          .append('circle').attr('r', 3);
+          .append('circle').attr('r', 3).style('opacity', 0);
     const mousemove = (x,y) => {
       if (this.getEnabled()) {
         const point = this.getValueForPixel(x,y);
         //const x0 = this._x(point.x), y0 = this._y(point.y);
         cursor.attr('cx', this._x(point.x)).attr('cy', this._y(point.y));
+        const lines = [];
         if (this.line_points.length === 1) {
           const line = this.line_points.slice();
           line.push(point);
-          this._line.selectAll('line')
-            .data([this.boundedLine(line)])
-            .join(
-              enter => enter.append('line')
+          lines.push(this.boundedLine(line));
+        }
+        this._line.selectAll('.drawline')
+          .data(lines)
+          .join(
+            enter => enter.append('line')
+              .classed('drawline', true)
+              .attr('x1', d => this._x(d[0].x))
+              .attr('y1', d => this._y(d[0].y))
+              .attr('x2', d => this._x(d[1].x))
+              .attr('y2', d => this._y(d[1].y))
+              .attr('stroke-width', 2)
+              .attr('stroke', 'grey'),
+            update => update.call(
+              update => update
                 .attr('x1', d => this._x(d[0].x))
                 .attr('y1', d => this._y(d[0].y))
                 .attr('x2', d => this._x(d[1].x))
-                .attr('y2', d => this._y(d[1].y))
-                .attr('stroke-width', 2)
-                .attr('stroke', 'grey'),
-              update => update.call(
-                update => update
-                  .attr('x1', d => this._x(d[0].x))
-                  .attr('y1', d => this._y(d[0].y))
-                  .attr('x2', d => this._x(d[1].x))
-                  .attr('y2', d => this._y(d[1].y))),
-              exit => exit.remove());
-        }
+                .attr('y2', d => this._y(d[1].y))),
+            exit => exit.remove());
       }
     }
     svg.on('mousemove', function() {
@@ -858,7 +963,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     svg.on('mouseleave', () => cursor.style('opacity', 0));
 
     this._line = svg.append('g').classed('CTATChart--line', true);
-    this._chart = svg.append('g').classed('CTATChart--points', true);
+    this._chart = svg.append('g').classed('CTATChart--points', true)
+      .attr('role', 'list').attr('aria-label', 'Points in Chart');
     this.drawPoints();
     this.drawLine();
     const add_point = (x,y) => {
@@ -879,8 +985,11 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
                 } else {
                   this.line_points.push(epoint);
                   if (this.line_points.length >= 2) {
+                    const line = new Line(...this.line_points);
+                    this.lines.push(line);
+                    this.line_points = [];
                     this.setAction('AddLine');
-                    this.setInput(JSON.stringify(this.getEquation()));
+                    this.setInput(JSON.stringify(line.toJSON()));
                     this.processAction();
                     this.drawLine();
                   }
@@ -928,7 +1037,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   _updateSAI() {
     // This builds the representation of the entire chart
     this.setAction('Graph');
-    const equation = this.getEquation();
+    //const equation = this.getEquation();
     this.setInput(JSON.stringify(
       {
         points: this.points.map(p=>p.toJSON()),
@@ -942,7 +1051,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           maximum: this.dataMaximumY,
           step: this.dataStepY
         },
-        equation: equation
+        lines: this.lines.map(l => l.toJSON())
       }));
   }
 
@@ -951,8 +1060,9 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (this.chart === null) { return; }
     const tooltip = this._tooltip;
     // TODO: maybe parameterize size of points.
-    const diamond = d3.symbol().type(d3.symbolTriangle).size(40);
-    const circle = d3.symbol().type(d3.symbolCircle).size(40);
+    const triangle = d3.symbol().type(d3.symbolTriangle).size(this.point_size);
+    const circle = d3.symbol().type(d3.symbolCircle).size(this.point_size);
+    const cross = d3.symbol().type(customSymbolX).size(this.point_size);
     const dir = p => direction(p,
                                [this.dataMinimumX, this.dataMaximumX],
                                [this.dataMinimumY, this.dataMaximumY]);
@@ -963,13 +1073,15 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .data(this.points)
       .join(
         enter => enter.append('path')
+          .attr('role', 'listitem')
+          .attr('aria-label', d => `X:${d.x.toLocaleString()}; Y:${d.y.toLocaleString()}; State:${d.state}`)
           .classed('CTATChartPoint', true)
           .classed('CTATChart--point', d=>this.pPointVisible(d))
           .classed('CTATChart--out-of-bounds', d=>!this.pPointVisible(d))
           .classed('CTAT--correct', d => d.isCorrect)
           .classed('CTAT--incorrect', d => d.isIncorrect)
           .classed('CTAT--hint', d => d.isHint)
-          .attr('d', d => this.pPointVisible(d)?circle:diamond)
+          .attr('d', d => this.pPointVisible(d)?(d.isIncorrect?cross():circle()):triangle())
           .attr('transform', transform)
           .on('mouseover', () =>
               tooltip.transition().duration(200).style('opacity', 1))
@@ -980,12 +1092,13 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           .on('mouseleave', () =>
               tooltip.transition().duration(200).style('opacity', 0)),
         update => update
+          .attr('aria-label', d => `X: ${d.x.toLocaleString()}; Y: ${d.y.toLocaleString()}; State: ${d.state}`)
           .classed('CTATChart--point', d=>this.pPointVisible(d))
           .classed('CTATChart--out-of-bounds', d=>!this.pPointVisible(d))
           .classed('CTAT--correct', d => d.isCorrect)
           .classed('CTAT--incorrect', d => d.isIncorrect)
           .classed('CTAT--hint', d => d.isHint)
-          .attr('d', d => this.pPointVisible(d)?circle():diamond())
+          .attr('d', d => this.pPointVisible(d)?(d.isIncorrect?cross():circle()):triangle())
           .transition().duration(500)
           .attr('transform', transform),
         exit => exit.remove());
@@ -1068,29 +1181,38 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   drawLine() {
     if (this._line === null) { return; }
     //const correctPoints = this.points.filter(p => p.isCorrect);
-    const lines = [];
-    //console.log(this.line_points);
-    if (this.line_points.length > 1) {
-      //const correctPoints = [...this.line_points];
-      lines.push(this.boundedLine(this.line_points));
-    }
-    this._line.selectAll('line')
-      .data(lines)
+    //this.lines.map(l => console.log(this.boundedLine(l.points)));
+    this.lines.map(l => {
+      l.bounded = this.boundedLine(l.points);
+      return l;
+    });
+    //if (this.line_points.length > 1) {
+    //  lines.push(this.boundedLine(this.line_points));
+    //}
+    console.log(this.lines.length);
+    this._line.selectAll('.CTATChart--spline')
+      .data(this.lines)
       .join(
         enter => enter.append('line')
-          .attr('x1', d => this._x(d[0].x))
-          .attr('y1', d => this._y(d[0].y))
-          .attr('x2', d => this._x(d[1].x))
-          .attr('y2', d => this._y(d[1].y))
-          .attr('stroke-width', 2)
-          .attr('stroke', 'black'),
-        update => update.call(
-          update => update
-            .transition().duration(500)
-            .attr('x1', d => this._x(d[0].x))
-            .attr('y1', d => this._y(d[0].y))
-            .attr('x2', d => this._x(d[1].x))
-            .attr('y2', d => this._y(d[1].y))),
+          .classed('CTATChart--spline', true)
+          .attr('x1', d => this._x(d.bounded[0].x))
+          .attr('y1', d => this._y(d.bounded[0].y))
+          .attr('x2', d => this._x(d.bounded[1].x))
+          .attr('y2', d => this._y(d.bounded[1].y))
+          .classed('CTAT--correct', d => d.isCorrect)
+          .classed('CTAT--incorrect', d => d.isIncorrect)
+          .classed('CTAT--hint', d => d.isHint),
+        update => update
+          .classed('CTAT--correct', d => d.isCorrect)
+          .classed('CTAT--incorrect', d => d.isIncorrect)
+          .classed('CTAT--hint', d => d.isHint)
+          //.call(
+          //  up => up
+          .transition().duration(500).call(up=>up
+              .attr('x1', d => this._x(d.bounded[0].x))
+              .attr('y1', d => this._y(d.bounded[0].y))
+              .attr('x2', d => this._x(d.bounded[1].x))
+          .attr('y2', d => this._y(d.bounded[1].y))),
         exit => exit.remove());
   }
 
@@ -1214,7 +1336,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   _showCorrect(aSAI) {
     const action = aSAI.getAction();
     switch (action) {
-    case "AddPoint": {
+    case "AddPoint":
       //console.log(aSAI.getInput());
       const point = Point.fromJSON(aSAI.getInput());
       const last_point = this.points[this.points.length-1];
@@ -1225,10 +1347,15 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.drawPoints();
       this.drawLine();
       break;
-    }
+
     case "AddLine":
-      this.line_points =
-        JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y));
+      //console.log(aSAI.getInput());
+      //const line = new Line(...JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y)));
+      //line.state = STATE.CORRECT;
+      //this.lines = this.lines.filter(l => l.equals(line));
+      //this.lines.push(line);
+      // BRD appears to be eating Input
+      this.lines[this.lines.length-1].state = STATE.CORRECT;
       this.drawLine();
       break;
 
@@ -1280,8 +1407,12 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       break;
     }
     case "AddLine":
-      this.line_points =
-        JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y));
+      const line = new Line(...JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y)));
+      line.state = STATE.INCORRECT;
+      this.lines = this.lines.filter(l => l.equals(line));
+      this.lines.push(line);
+      //      this.line_points =
+      //  JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y));
       this.drawLine();
       break;
       
