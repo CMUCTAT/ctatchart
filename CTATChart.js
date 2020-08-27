@@ -797,9 +797,9 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const rect = this.getDivWrap().getBoundingClientRect(),
           width = rect.width,
           height = rect.height;
-    const tran = d3.transition().duration(500);
     this._x.domain([this.dataMinimumX, this.dataMaximumX])//.nice()
       .range([this.margin.left, width - this.margin.right]);
+    const transition = d3.transition().duration(500);
     // TODO: tick values will need a different end value for fractional steps
     const delta = this.dataStepX;
     const ticks = d3.range(-delta, this.dataMinimumX - delta, -delta)
@@ -810,7 +810,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     //                       this.dataMaximumX + 1,
     //                       this.dataStepX);
     this._xAxisGrid
-      .transition(tran)
+      .transition(transition)
       .call(this._xAxisGridCall.scale(this._x).tickValues(ticks)
             .tickSize(-height+this.margin.top+this.margin.bottom)
             .tickFormat(""))
@@ -818,7 +818,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .call(g => g.selectAll('.domain').attr('opacity', 0))
       .call(g => g.selectAll('.domain').remove());
     //console.log(this._y(0));
-    this._xAxis.transition(tran)
+    this._xAxis.transition(transition)
       //.call(g => g.attr('transform', `translate(0,${this._y(0)})`))
       .call(this._xAxisCall.scale(this._x).tickValues(ticks));
     /*this._xAxisGrid.selectAll('CTATChart--0axis')
@@ -845,7 +845,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const rect = this.getDivWrap().getBoundingClientRect(),
           width = rect.width,
           height = rect.height;
-    const tran = d3.transition().duration(500);
+    const transition = d3.transition().duration(500);
     this._y.domain([this.dataMinimumY, this.dataMaximumY])//.nice()
       .range([height - this.margin.bottom, this.margin.top]);
     const delta = this.dataStepY;
@@ -856,14 +856,14 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     //const ticks = d3.range(this.dataMinimumY,
     //                       this.dataMaximumY + 1,
     //                       this.dataStepY);
-    this._yAxisGrid.transition(tran)
+    this._yAxisGrid.transition(transition)
       .call(this._yAxisGridCall.scale(this._y).tickValues(ticks)
             .tickSize(-width+(this.margin.right+this.margin.left))
             .tickFormat(''))
       .call(g => g.selectAll('.tick').attr('opacity', 0.1))
       .call(g => g.selectAll('.domain').attr('opacity', 0))
       .call(g => g.selectAll('.domain').remove());
-    this._yAxis.transition(tran)
+    this._yAxis.transition(transition)
       .call(this._yAxisCall.scale(this._y).tickValues(ticks));
   }
 
@@ -954,8 +954,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
             exit => exit.remove());
       }
     }
-    svg.on('mousemove', function() {
-      const coords = d3.mouse(this);
+    svg.on('mousemove', function(evt) {
+      const coords = d3.pointer(evt); //d3.mouse(this);
       mousemove(coords[0], coords[1]);
     });
     svg.on('mouseover',
@@ -1013,8 +1013,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
         }
       }
     };
-    svg.on('click', function() {
-      const coords = d3.mouse(this);
+    svg.on('click', function(evt) {
+      const coords = d3.pointer(evt); //d3.mouse(this);
       add_point(coords[0], coords[1]);
     });
 
@@ -1076,8 +1076,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           .attr('role', 'listitem')
           .attr('aria-label', d => `X:${d.x.toLocaleString()}; Y:${d.y.toLocaleString()}; State:${d.state}`)
           .classed('CTATChartPoint', true)
-          .classed('CTATChart--point', d=>this.pPointVisible(d))
-          .classed('CTATChart--out-of-bounds', d=>!this.pPointVisible(d))
+          .classed('CTATChart--point', d => this.pPointVisible(d))
+          .classed('CTATChart--out-of-bounds', d => !this.pPointVisible(d))
           .classed('CTAT--correct', d => d.isCorrect)
           .classed('CTAT--incorrect', d => d.isIncorrect)
           .classed('CTAT--hint', d => d.isHint)
@@ -1085,22 +1085,22 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           .attr('transform', transform)
           .on('mouseover', () =>
               tooltip.transition().duration(200).style('opacity', 1))
-          .on('mousemove', d => tooltip.html(d.toString())
-              .style('left', `${d3.event.pageX+d.r+3}px`)
-              .style('top', `${d3.event.pageY-d.r-12}px`)
+          .on('mousemove', (e, d) => tooltip.html(d.toString())
+              .style('left', `${e.pageX+d.r+3}px`)
+              .style('top', `${e.pageY-d.r-12}px`)
              )
           .on('mouseleave', () =>
               tooltip.transition().duration(200).style('opacity', 0)),
         update => update
           .attr('aria-label', d => `X: ${d.x.toLocaleString()}; Y: ${d.y.toLocaleString()}; State: ${d.state}`)
-          .classed('CTATChart--point', d=>this.pPointVisible(d))
-          .classed('CTATChart--out-of-bounds', d=>!this.pPointVisible(d))
+          .classed('CTATChart--point', d => this.pPointVisible(d))
+          .classed('CTATChart--out-of-bounds', d => !this.pPointVisible(d))
           .classed('CTAT--correct', d => d.isCorrect)
           .classed('CTAT--incorrect', d => d.isIncorrect)
           .classed('CTAT--hint', d => d.isHint)
           .attr('d', d => this.pPointVisible(d)?(d.isIncorrect?cross():circle()):triangle())
           .transition().duration(500)
-          .attr('transform', transform),
+          .attr('transform', transform).selection(),
         exit => exit.remove());
   }
 
@@ -1206,13 +1206,13 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           .classed('CTAT--correct', d => d.isCorrect)
           .classed('CTAT--incorrect', d => d.isIncorrect)
           .classed('CTAT--hint', d => d.isHint)
-          //.call(
-          //  up => up
-          .transition().duration(500).call(up=>up
+          .transition().duration(500).call(
+            up=>up
               .attr('x1', d => this._x(d.bounded[0].x))
               .attr('y1', d => this._y(d.bounded[0].y))
               .attr('x2', d => this._x(d.bounded[1].x))
-          .attr('y2', d => this._y(d.bounded[1].y))),
+              .attr('y2', d => this._y(d.bounded[1].y))
+          ).selection(),
         exit => exit.remove());
   }
 
