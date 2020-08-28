@@ -1,76 +1,78 @@
 .CTATChart {
-    flex: none;
+  flex: none;
 }
 
 .CTATNumericStepper {
-    padding-right: 1em;
+  padding-right: 1em;
 }
 .chart {
-    width: 510px;
-    display: flex;
-    flex-direction: column;
-    box-sizing: border-box;
-    margin: 5px;
-    padding: 5px;
-    border: 1px solid darkgrey;
+  width: 510px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  margin: 5px;
+  padding: 5px;
+  border: 1px solid darkgrey;
 }
 .top {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
 }
 .axis-y {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding-bottom: 1em;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-bottom: 1em;
 }
 .main {
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 }
 .bottom {
-    display:flex;
-    flex-direction: row;
-    justify-content: space-between;
-    padding-left: 90px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding-left: 90px;
 }
 
 /* Area containing the CTAT Hint components */
 #hint-box {
-    /*position: fixed;*/
-    bottom: 10px;
-    background-color: cornsilk;
-    border: 1px solid grey;
-    border-radius: 5px;
-    padding: 5px;
-    display: flex;
-    justify-content: space-around;
-    margin: 0 auto;
-    width: 500px;
+  /*position: fixed;*/
+  bottom: 10px;
+  background-color: cornsilk;
+  border: 1px solid grey;
+  border-radius: 5px;
+  padding: 5px;
+  display: flex;
+  justify-content: space-around;
+  margin: 0 auto;
+  width: 500px;
 }
 /* Fix spacing on CTAT buttons/hint window */
-.CTATHintWindow--hint-content { padding-top: 5px; }
+.CTATHintWindow--hint-content {
+  padding-top: 5px;
+}
 .CTATHintWindow {
-    display: inline-flex;
-    width: 100%;
+  display: inline-flex;
+  width: 100%;
 }
 .CTATHintButton {
-    margin: 0 5px 5px 5px;
+  margin: 0 5px 5px 5px;
 }
 .CTATDoneButton {
-    margin: 0 5px 0 5px
+  margin: 0 5px 0 5px;
 }
 .CTATSubmitButton {
-    margin-bottom: 10px;
-    margin-left: 15px;
-    margin-top: 18px;
+  margin-bottom: 10px;
+  margin-left: 15px;
+  margin-top: 18px;
 }
-.CTATSubmitButton>button.CTAT--correct::after {
-    color: limegreen;
-    content: " \2713";
+.CTATSubmitButton > button.CTAT--correct::after {
+  color: limegreen;
+  content: ' \2713';
 }
-.CTATSubmitButton>button.CTAT--incorrect::after {
-    color: red;
-    content: " \2717";
+.CTATSubmitButton > button.CTAT--incorrect::after {
+  color: red;
+  content: ' \2717';
 }

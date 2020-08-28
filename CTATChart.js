@@ -45,9 +45,9 @@ import './CTATChart.css';
  * @returns :number
  */
 function closest(arr, value) {
-  return arr.reduce(
-    (prev, cur) =>
-      (Math.abs(cur - value) < Math.abs(prev - value) ? cur : prev));
+  return arr.reduce((prev, cur) =>
+    Math.abs(cur - value) < Math.abs(prev - value) ? cur : prev
+  );
 }
 
 /**
@@ -91,7 +91,7 @@ function direction(point, x, y) {
     return 180;
   } // greater than max y or default
   return 0;
-}  
+}
 
 /**
  * Get the name of the controller component depending on the type of aComponent.
@@ -118,7 +118,7 @@ function controller_name(aComponent) {
  * @returns :CTATSAI
  */
 function rerouted_sai(component, sai) {
-  if (sai.getClassName() == "CTATMessage") {
+  if (sai.getClassName() == 'CTATMessage') {
     sai = sai.getSAI();
   }
   const clone = sai.clone();
@@ -169,13 +169,13 @@ const STATE = {
   INCORRECT: 'incorrect',
   SELECTED: 'select',
   HINT: 'hint',
-  UNGRADED: 'ungraded'
-}
+  UNGRADED: 'ungraded',
+};
 /** Set of states that are "valid" */
 const VALID_STATES = new Set([STATE.CORRECT, STATE.UNGRADED]);
 class Graded {
   constructor(state) {
-    this. state = state || STATE.UNGRADED;
+    this.state = state || STATE.UNGRADED;
   }
   /**
    * If the point has a state that allows it to be used in line drawing.
@@ -203,7 +203,7 @@ class Graded {
     return this.state == STATE.HINT;
   }
 }
-  
+
 /** Represents a point in the graph */
 class Point extends Graded {
   /**
@@ -239,7 +239,7 @@ class Point extends Graded {
    * @returns :string - {"x":<number>, "y":<number}
    */
   toJSON() {
-    return {'x': this.x, 'y': this.y};
+    return { x: this.x, y: this.y };
   }
 
   /**
@@ -247,7 +247,9 @@ class Point extends Graded {
    * @param str: string - of the form produced by Point.toString()
    */
   static fromString(str) {
-    const parse = str.match(/^\s*\(\s*(\d+[.]?\d*)\s*,\s*(\d+[.]?\d*)\s*\)\s*$/);
+    const parse = str.match(
+      /^\s*\(\s*(\d+[.]?\d*)\s*,\s*(\d+[.]?\d*)\s*\)\s*$/
+    );
     if (parse) {
       return new Point(Number(parse[1]), Number(parse[2]));
     }
@@ -270,9 +272,11 @@ class Line extends Graded {
   }
   get project() {
     if (this.points.length < 2) {
-      return d3.scaleLinear().domain([0,1]).range([Infinity, Infinity]);
+      return d3.scaleLinear().domain([0, 1]).range([Infinity, Infinity]);
     }
-    return d3.scaleLinear().domain([this.points[0].x, this.points[1].x])
+    return d3
+      .scaleLinear()
+      .domain([this.points[0].x, this.points[1].x])
       .range([this.points[0].y, this.points[1].y]);
   }
   get vector() {
@@ -280,11 +284,11 @@ class Line extends Graded {
     return [mx(0), mx(1) - mx(0)];
   }
   toJSON() {
-    return this.points.map(p => p.toJSON());
+    return this.points.map((p) => p.toJSON());
   }
   static fromJSON(str) {
     const parse = JSON.parse(str);
-    return new Line(...parse.map(p => new Point(p.x, p.y)));
+    return new Line(...parse.map((p) => new Point(p.x, p.y)));
   }
   equals(line) {
     console.log(this, line);
@@ -292,13 +296,13 @@ class Line extends Graded {
     const a = this.vector;
     const b = line.vector;
     const e = 0.0001;
-    return (Math.abs(a[0] - b[0]) < e) && (Math.abs(a[1] - b[1]) < e);
+    return Math.abs(a[0] - b[0]) < e && Math.abs(a[1] - b[1]) < e;
   }
 }
 
 /** Object used in association with d3.symbol() to make an X */
 const customSymbolX = {
-  draw: function(context, size) {
+  draw: function (context, size) {
     const r = Math.sqrt(size / 5) / 2;
     const lr = Math.sin(Math.PI / 4) * 3 * r;
     context.moveTo(-r, 0);
@@ -314,14 +318,14 @@ const customSymbolX = {
     context.lineTo(-lr, lr + r);
     context.lineTo(-lr - r, lr);
     context.closePath();
-  }
-}
+  },
+};
 
 /** A CTAT tutorable component for interacting with a two dimensional chart. */
 export default class CTATChart extends CTAT.Component.Base.Tutorable {
-  constructor () {
-    super("CTATChart", "TwoDimensionChart");
-    this.margin = {top: 10, right: 10, bottom: 30, left: 30};
+  constructor() {
+    super('CTATChart', 'TwoDimensionChart');
+    this.margin = { top: 10, right: 10, bottom: 30, left: 30 };
 
     // data
     this.points = []; // : Point[]
@@ -352,7 +356,9 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
 
   /** Get the chart instance */
-  get chart() { return this._chart; }
+  get chart() {
+    return this._chart;
+  }
 
   /**
    * Generate the point that is at the given pixel coordinates.
@@ -364,7 +370,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    */
   getValueForPixel(x, y) {
     let vx = this._x.invert(x),
-        vy = this._y.invert(y);
+      vy = this._y.invert(y);
     if (this.dataIsSnapping) {
       // if snapping, get closest tick value
       vx = this.closestXtick(vx);
@@ -372,7 +378,9 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     }
     if (this.dataLineSnapping && this.lines.length > 1) {
       // if line snapping, get closest projected value.
-      vy = this.lines.map(l => l.project(vx)).reduce((m, cur) => Math.abs(cur - vy) < Math.abs(m - vy) ? cur : m)
+      vy = this.lines
+        .map((l) => l.project(vx))
+        .reduce((m, cur) => (Math.abs(cur - vy) < Math.abs(m - vy) ? cur : m));
       //vy = this.equation(vx);
     }
     return new Point(vx, vy);
@@ -381,12 +389,16 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    * @param value: number - an x axis value
    * @returns : number - the value of the closest x tickmark to value.
    */
-  closestXtick(value) { return closest(this._xAxisCall.tickValues(), value); }
+  closestXtick(value) {
+    return closest(this._xAxisCall.tickValues(), value);
+  }
   /**
    * @param value: number - an y axis value
    * @returns : number - the value of the closest y tickmark to value.
    */
-  closestYtick(value) { return closest(this._yAxisCall.tickValues(), value); }
+  closestYtick(value) {
+    return closest(this._yAxisCall.tickValues(), value);
+  }
 
   /**
    * Accessor for querying if snapping is enabled.
@@ -433,7 +445,9 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    */
   getDataController(key) {
     const ctrls = this.getDivWrap().getAttribute(key);
-    if (ctrls) { return ctrls.split(/\s*[;,]\s*/).map(c=>c.trim()); }
+    if (ctrls) {
+      return ctrls.split(/\s*[;,]\s*/).map((c) => c.trim());
+    }
     return [];
   }
 
@@ -793,32 +807,41 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
 
   /** Render the x axis. */
   drawAxisX() {
-    if (!this._xAxisGrid || !this._xAxis) { return; }
+    if (!this._xAxisGrid || !this._xAxis) {
+      return;
+    }
     const rect = this.getDivWrap().getBoundingClientRect(),
-          width = rect.width,
-          height = rect.height;
-    this._x.domain([this.dataMinimumX, this.dataMaximumX])//.nice()
+      width = rect.width,
+      height = rect.height;
+    this._x
+      .domain([this.dataMinimumX, this.dataMaximumX]) //.nice()
       .range([this.margin.left, width - this.margin.right]);
     const transition = d3.transition().duration(500);
     // TODO: tick values will need a different end value for fractional steps
     const delta = this.dataStepX;
-    const ticks = d3.range(-delta, this.dataMinimumX - delta, -delta)
-          .reverse()
-          .concat(d3.range(0, this.dataMaximumX + delta, delta))
-          .filter(v => v <= this.dataMaximumX && v >= this.dataMinimumX);
+    const ticks = d3
+      .range(-delta, this.dataMinimumX - delta, -delta)
+      .reverse()
+      .concat(d3.range(0, this.dataMaximumX + delta, delta))
+      .filter((v) => v <= this.dataMaximumX && v >= this.dataMinimumX);
     //const ticks = d3.range(this.dataMinimumX,
     //                       this.dataMaximumX + 1,
     //                       this.dataStepX);
     this._xAxisGrid
       .transition(transition)
-      .call(this._xAxisGridCall.scale(this._x).tickValues(ticks)
-            .tickSize(-height+this.margin.top+this.margin.bottom)
-            .tickFormat(""))
-      .call(g => g.selectAll('.tick').attr('opacity', 0.1))
-      .call(g => g.selectAll('.domain').attr('opacity', 0))
-      .call(g => g.selectAll('.domain').remove());
+      .call(
+        this._xAxisGridCall
+          .scale(this._x)
+          .tickValues(ticks)
+          .tickSize(-height + this.margin.top + this.margin.bottom)
+          .tickFormat('')
+      )
+      .call((g) => g.selectAll('.tick').attr('opacity', 0.1))
+      .call((g) => g.selectAll('.domain').attr('opacity', 0))
+      .call((g) => g.selectAll('.domain').remove());
     //console.log(this._y(0));
-    this._xAxis.transition(transition)
+    this._xAxis
+      .transition(transition)
       //.call(g => g.attr('transform', `translate(0,${this._y(0)})`))
       .call(this._xAxisCall.scale(this._x).tickValues(ticks));
     /*this._xAxisGrid.selectAll('CTATChart--0axis')
@@ -841,40 +864,52 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   }
   /** Render the y axis. */
   drawAxisY() {
-    if (!this._yAxisGrid || !this._yAxis) { return; }
+    if (!this._yAxisGrid || !this._yAxis) {
+      return;
+    }
     const rect = this.getDivWrap().getBoundingClientRect(),
-          width = rect.width,
-          height = rect.height;
+      width = rect.width,
+      height = rect.height;
     const transition = d3.transition().duration(500);
-    this._y.domain([this.dataMinimumY, this.dataMaximumY])//.nice()
+    this._y
+      .domain([this.dataMinimumY, this.dataMaximumY]) //.nice()
       .range([height - this.margin.bottom, this.margin.top]);
     const delta = this.dataStepY;
-    const ticks = d3.range(-delta, this.dataMinimumY - delta, -delta)
-          .reverse()
-          .concat(d3.range(0, this.dataMaximumY + delta, delta))
-          .filter(v => v <= this.dataMaximumY && v >= this.dataMinimumY);
+    const ticks = d3
+      .range(-delta, this.dataMinimumY - delta, -delta)
+      .reverse()
+      .concat(d3.range(0, this.dataMaximumY + delta, delta))
+      .filter((v) => v <= this.dataMaximumY && v >= this.dataMinimumY);
     //const ticks = d3.range(this.dataMinimumY,
     //                       this.dataMaximumY + 1,
     //                       this.dataStepY);
-    this._yAxisGrid.transition(transition)
-      .call(this._yAxisGridCall.scale(this._y).tickValues(ticks)
-            .tickSize(-width+(this.margin.right+this.margin.left))
-            .tickFormat(''))
-      .call(g => g.selectAll('.tick').attr('opacity', 0.1))
-      .call(g => g.selectAll('.domain').attr('opacity', 0))
-      .call(g => g.selectAll('.domain').remove());
-    this._yAxis.transition(transition)
+    this._yAxisGrid
+      .transition(transition)
+      .call(
+        this._yAxisGridCall
+          .scale(this._y)
+          .tickValues(ticks)
+          .tickSize(-width + (this.margin.right + this.margin.left))
+          .tickFormat('')
+      )
+      .call((g) => g.selectAll('.tick').attr('opacity', 0.1))
+      .call((g) => g.selectAll('.domain').attr('opacity', 0))
+      .call((g) => g.selectAll('.domain').remove());
+    this._yAxis
+      .transition(transition)
       .call(this._yAxisCall.scale(this._y).tickValues(ticks));
   }
 
   get dataLineDrawingEnabled() {
-    const enabled = this.getDivWrap().getAttribute('data-ctat-line-drawing-enabled');
-    return enabled ? CTATGlobalFunctions.stringToBoolean(enabled): true;
+    const enabled = this.getDivWrap().getAttribute(
+      'data-ctat-line-drawing-enabled'
+    );
+    return enabled ? CTATGlobalFunctions.stringToBoolean(enabled) : true;
   }
   set dataLineDrawingEnabled(val) {
     this.getDivWrap().setAttribute('data-ctat-line-drawing-enabled', `${val}`);
   }
-  
+
   EnableLineDrawing(bool) {
     this.dataLineDrawingEnabled(bool);
   }
@@ -887,7 +922,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this.setComponent(graph_area);
     this.addComponentReference(this, graph_area);
     const dga = d3.select(graph_area);
-    this._tooltip = dga.append('div')
+    this._tooltip = dga
+      .append('div')
       .style('opacity', 0)
       .style('pointer-events', 'none')
       .style('font-size', 'small')
@@ -895,9 +931,9 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .classed('tooltip', true)
       .style('position', 'absolute');
     const rect = graph_area.getBoundingClientRect(),
-          width = rect.width,
-          height = rect.height;
-    const svg = dga.append('svg').attr("viewBox", [0, 0, width, height]);
+      width = rect.width,
+      height = rect.height;
+    const svg = dga.append('svg').attr('viewBox', [0, 0, width, height]);
     svg.attr('role', 'group');
     svg.append('title', 'CTAT interactive two dimentional chart');
     /*const defs = svg.append('defs');
@@ -907,25 +943,33 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const feMerge = filter.append('feMerge');
     feMerge.append('feMergeNode').attr('in', 'coloredBlur');
     feMerge.append('feMergeNode').attr('in', 'SourceGraphic');*/
-    this._xAxisGrid = svg.append('g')
+    this._xAxisGrid = svg
+      .append('g')
       .classed('CTATChart--grid', true)
       .attr('transform', `translate(0,${height - this.margin.bottom})`);
-    this._yAxisGrid = svg.append('g')
+    this._yAxisGrid = svg
+      .append('g')
       .classed('CTATChart--grid', true)
       .attr('transform', `translate(${this.margin.left},0)`);
-    this._xAxis = svg.append('g')
+    this._xAxis = svg
+      .append('g')
       .classed('CTATChart--axis', true)
       .attr('transform', `translate(0,${height - this.margin.bottom})`);
-    this._yAxis = svg.append('g')
+    this._yAxis = svg
+      .append('g')
       .classed('CTATChart--axis', true)
       .attr('transform', `translate(${this.margin.left},0)`);
     this.drawAxisX();
     this.drawAxisY();
-    const cursor = svg.append('g').classed('CTATChart--cursor', true)
-          .append('circle').attr('r', 3).style('opacity', 0);
-    const mousemove = (x,y) => {
+    const cursor = svg
+      .append('g')
+      .classed('CTATChart--cursor', true)
+      .append('circle')
+      .attr('r', 3)
+      .style('opacity', 0);
+    const mousemove = (x, y) => {
       if (this.getEnabled()) {
-        const point = this.getValueForPixel(x,y);
+        const point = this.getValueForPixel(x, y);
         //const x0 = this._x(point.x), y0 = this._y(point.y);
         cursor.attr('cx', this._x(point.x)).attr('cy', this._y(point.y));
         const lines = [];
@@ -934,53 +978,66 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           line.push(point);
           lines.push(this.boundedLine(line));
         }
-        this._line.selectAll('.drawline')
+        this._line
+          .selectAll('.drawline')
           .data(lines)
           .join(
-            enter => enter.append('line')
-              .classed('drawline', true)
-              .attr('x1', d => this._x(d[0].x))
-              .attr('y1', d => this._y(d[0].y))
-              .attr('x2', d => this._x(d[1].x))
-              .attr('y2', d => this._y(d[1].y))
-              .attr('stroke-width', 2)
-              .attr('stroke', 'grey'),
-            update => update.call(
-              update => update
-                .attr('x1', d => this._x(d[0].x))
-                .attr('y1', d => this._y(d[0].y))
-                .attr('x2', d => this._x(d[1].x))
-                .attr('y2', d => this._y(d[1].y))),
-            exit => exit.remove());
+            (enter) =>
+              enter
+                .append('line')
+                .classed('drawline', true)
+                .attr('x1', (d) => this._x(d[0].x))
+                .attr('y1', (d) => this._y(d[0].y))
+                .attr('x2', (d) => this._x(d[1].x))
+                .attr('y2', (d) => this._y(d[1].y))
+                .attr('stroke-width', 2)
+                .attr('stroke', 'grey'),
+            (update) =>
+              update.call((update) =>
+                update
+                  .attr('x1', (d) => this._x(d[0].x))
+                  .attr('y1', (d) => this._y(d[0].y))
+                  .attr('x2', (d) => this._x(d[1].x))
+                  .attr('y2', (d) => this._y(d[1].y))
+              ),
+            (exit) => exit.remove()
+          );
       }
-    }
-    svg.on('mousemove', function(evt) {
+    };
+    svg.on('mousemove', function (evt) {
       const coords = d3.pointer(evt); //d3.mouse(this);
       mousemove(coords[0], coords[1]);
     });
-    svg.on('mouseover',
-           () => this.getEnabled() && cursor.style('opacity', 0.2));
+    svg.on(
+      'mouseover',
+      () => this.getEnabled() && cursor.style('opacity', 0.2)
+    );
     svg.on('mouseleave', () => cursor.style('opacity', 0));
 
     this._line = svg.append('g').classed('CTATChart--line', true);
-    this._chart = svg.append('g').classed('CTATChart--points', true)
-      .attr('role', 'list').attr('aria-label', 'Points in Chart');
+    this._chart = svg
+      .append('g')
+      .classed('CTATChart--points', true)
+      .attr('role', 'list')
+      .attr('aria-label', 'Points in Chart');
     this.drawPoints();
     this.drawLine();
-    const add_point = (x,y) => {
+    const add_point = (x, y) => {
       if (this.getEnabled()) {
-        const point = this.getValueForPixel(x,y);
+        const point = this.getValueForPixel(x, y);
         if (this.isPoint(point.x, point.y)) {
-          const epoint = this.points.find(p => p.at(point.x, point.y));
+          const epoint = this.points.find((p) => p.at(point.x, point.y));
           if (epoint.isValid) {
             if (this.dataLineDrawingEnabled) {
-              const correctPoints = this.points.filter(p => p.isValid);
+              const correctPoints = this.points.filter((p) => p.isValid);
               if (correctPoints.length >= 2) {
-                const inline = this.line_points.some(
-                  point => point.at(epoint.x,epoint.y));
+                const inline = this.line_points.some((point) =>
+                  point.at(epoint.x, epoint.y)
+                );
                 if (inline) {
                   this.line_points = this.line_points.filter(
-                    p => !p.at(epoint.x,epoint.y));
+                    (p) => !p.at(epoint.x, epoint.y)
+                  );
                   this.drawLine();
                 } else {
                   this.line_points.push(epoint);
@@ -1013,15 +1070,18 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
         }
       }
     };
-    svg.on('click', function(evt) {
+    svg.on('click', function (evt) {
       const coords = d3.pointer(evt); //d3.mouse(this);
       add_point(coords[0], coords[1]);
     });
 
     // Add listener for controller events.
     if (!CTATConfiguration.get('previewMode')) {
-      document.addEventListener(CTAT.Component.Base.Tutorable.EventType.action,
-                                this.handleAction.bind(this), false);
+      document.addEventListener(
+        CTAT.Component.Base.Tutorable.EventType.action,
+        this.handleAction.bind(this),
+        false
+      );
     }
   }
 
@@ -1038,70 +1098,112 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     // This builds the representation of the entire chart
     this.setAction('Graph');
     //const equation = this.getEquation();
-    this.setInput(JSON.stringify(
-      {
-        points: this.points.map(p=>p.toJSON()),
+    this.setInput(
+      JSON.stringify({
+        points: this.points.map((p) => p.toJSON()),
         xAxis: {
           minimum: this.dataMinimumX,
           maximum: this.dataMaximumX,
-          step: this.dataStepX
+          step: this.dataStepX,
         },
         yAxis: {
           minimum: this.dataMinimumY,
           maximum: this.dataMaximumY,
-          step: this.dataStepY
+          step: this.dataStepY,
         },
-        lines: this.lines.map(l => l.toJSON())
-      }));
+        lines: this.lines.map((l) => l.toJSON()),
+      })
+    );
   }
 
   /** Render the points in the chart. */
   drawPoints() {
-    if (this.chart === null) { return; }
+    if (this.chart === null) {
+      return;
+    }
     const tooltip = this._tooltip;
     // TODO: maybe parameterize size of points.
     const triangle = d3.symbol().type(d3.symbolTriangle).size(this.point_size);
     const circle = d3.symbol().type(d3.symbolCircle).size(this.point_size);
     const cross = d3.symbol().type(customSymbolX).size(this.point_size);
-    const dir = p => direction(p,
-                               [this.dataMinimumX, this.dataMaximumX],
-                               [this.dataMinimumY, this.dataMaximumY]);
-    const bx = p => bounded(p.x, this._x);
-    const by = p => bounded(p.y, this._y);
-    const transform = d => `rotate(${dir(d)}, ${bx(d)}, ${by(d)}) translate(${bx(d)}, ${by(d)})`;
-    this.chart.selectAll('.CTATChartPoint')
+    const dir = (p) =>
+      direction(
+        p,
+        [this.dataMinimumX, this.dataMaximumX],
+        [this.dataMinimumY, this.dataMaximumY]
+      );
+    const bx = (p) => bounded(p.x, this._x);
+    const by = (p) => bounded(p.y, this._y);
+    const transform = (d) =>
+      `rotate(${dir(d)}, ${bx(d)}, ${by(d)}) translate(${bx(d)}, ${by(d)})`;
+    this.chart
+      .selectAll('.CTATChartPoint')
       .data(this.points)
       .join(
-        enter => enter.append('path')
-          .attr('role', 'listitem')
-          .attr('aria-label', d => `X:${d.x.toLocaleString()}; Y:${d.y.toLocaleString()}; State:${d.state}`)
-          .classed('CTATChartPoint', true)
-          .classed('CTATChart--point', d => this.pPointVisible(d))
-          .classed('CTATChart--out-of-bounds', d => !this.pPointVisible(d))
-          .classed('CTAT--correct', d => d.isCorrect)
-          .classed('CTAT--incorrect', d => d.isIncorrect)
-          .classed('CTAT--hint', d => d.isHint)
-          .attr('d', d => this.pPointVisible(d)?(d.isIncorrect?cross():circle()):triangle())
-          .attr('transform', transform)
-          .on('mouseover', () =>
-              tooltip.transition().duration(200).style('opacity', 1))
-          .on('mousemove', (e, d) => tooltip.html(d.toString())
-              .style('left', `${e.pageX+d.r+3}px`)
-              .style('top', `${e.pageY-d.r-12}px`)
-             )
-          .on('mouseleave', () =>
-              tooltip.transition().duration(200).style('opacity', 0)),
-        update => update
-          .attr('aria-label', d => `X: ${d.x.toLocaleString()}; Y: ${d.y.toLocaleString()}; State: ${d.state}`)
-          .classed('CTATChart--point', d => this.pPointVisible(d))
-          .classed('CTATChart--out-of-bounds', d => !this.pPointVisible(d))
-          .classed('CTAT--correct', d => d.isCorrect)
-          .classed('CTAT--incorrect', d => d.isIncorrect)
-          .classed('CTAT--hint', d => d.isHint)
-          .attr('d', d => this.pPointVisible(d)?(d.isIncorrect?cross():circle()):triangle())
-          .transition().duration(500)
-          .attr('transform', transform).selection(),
-        exit => exit.remove());
+        (enter) =>
+          enter
+            .append('path')
+            .attr('role', 'listitem')
+            .attr(
+              'aria-label',
+              (d) =>
+                `X:${d.x.toLocaleString()}; Y:${d.y.toLocaleString()}; State:${
+                  d.state
+                }`
+            )
+            .classed('CTATChartPoint', true)
+            .classed('CTATChart--point', (d) => this.pPointVisible(d))
+            .classed('CTATChart--out-of-bounds', (d) => !this.pPointVisible(d))
+            .classed('CTAT--correct', (d) => d.isCorrect)
+            .classed('CTAT--incorrect', (d) => d.isIncorrect)
+            .classed('CTAT--hint', (d) => d.isHint)
+            .attr('d', (d) =>
+              this.pPointVisible(d)
+                ? d.isIncorrect
+                  ? cross()
+                  : circle()
+                : triangle()
+            )
+            .attr('transform', transform)
+            .on('mouseover', () =>
+              tooltip.transition().duration(200).style('opacity', 1)
+            )
+            .on('mousemove', (e, d) =>
+              tooltip
+                .html(d.toString())
+                .style('left', `${e.pageX + d.r + 3}px`)
+                .style('top', `${e.pageY - d.r - 12}px`)
+            )
+            .on('mouseleave', () =>
+              tooltip.transition().duration(200).style('opacity', 0)
+            ),
+        (update) =>
+          update
+            .attr(
+              'aria-label',
+              (d) =>
+                `X: ${d.x.toLocaleString()}; Y: ${d.y.toLocaleString()}; State: ${
+                  d.state
+                }`
+            )
+            .classed('CTATChart--point', (d) => this.pPointVisible(d))
+            .classed('CTATChart--out-of-bounds', (d) => !this.pPointVisible(d))
+            .classed('CTAT--correct', (d) => d.isCorrect)
+            .classed('CTAT--incorrect', (d) => d.isIncorrect)
+            .classed('CTAT--hint', (d) => d.isHint)
+            .attr('d', (d) =>
+              this.pPointVisible(d)
+                ? d.isIncorrect
+                  ? cross()
+                  : circle()
+                : triangle()
+            )
+            .transition()
+            .duration(500)
+            .attr('transform', transform)
+            .selection(),
+        (exit) => exit.remove()
+      );
   }
 
   /** TPA
@@ -1129,7 +1231,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    * @param y: number - y value
    */
   removePoint(x, y) {
-    this.points = this.points.filter(p => !p.at(x, y));
+    this.points = this.points.filter((p) => !p.at(x, y));
     this.drawPoints();
   }
   /**
@@ -1138,7 +1240,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    * @param y: number - y value
    */
   isPoint(x, y) {
-    return this.points.some(point => point.at(x,y));
+    return this.points.some((point) => point.at(x, y));
   }
 
   /**
@@ -1149,15 +1251,18 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    */
   boundedLine(points) {
     if (points[0].x == points[1].x) {
-      return [{x: points[0].x, y: this.dataMinimumY},
-              {x: points[1].x, y: this.dataMaximumY}];
+      return [
+        { x: points[0].x, y: this.dataMinimumY },
+        { x: points[1].x, y: this.dataMaximumY },
+      ];
     }
-    this.equation.domain([points[0].x, points[1].x])
+    this.equation
+      .domain([points[0].x, points[1].x])
       .range([points[0].y, points[1].y]);
     let x1 = this.dataMinimumX,
-        y1 = this.equation(this.dataMinimumX),
-        x2 = this.dataMaximumX,
-        y2 = this.equation(this.dataMaximumX);
+      y1 = this.equation(this.dataMinimumX),
+      x2 = this.dataMaximumX,
+      y2 = this.equation(this.dataMaximumX);
     if (y1 < this.dataMinimumY) {
       x1 = this.equation.invert(this.dataMinimumY);
       y1 = this.dataMinimumY;
@@ -1175,14 +1280,19 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       y2 = this.dataMaximumY;
     }
     this.equation.domain([x1, x2]).range([y1, y2]).clamp();
-    return [{x: x1, y: y1}, {x: x2, y: y2}]
+    return [
+      { x: x1, y: y1 },
+      { x: x2, y: y2 },
+    ];
   }
   /** Render the line if defined. */
   drawLine() {
-    if (this._line === null) { return; }
+    if (this._line === null) {
+      return;
+    }
     //const correctPoints = this.points.filter(p => p.isCorrect);
     //this.lines.map(l => console.log(this.boundedLine(l.points)));
-    this.lines.map(l => {
+    this.lines.map((l) => {
       l.bounded = this.boundedLine(l.points);
       return l;
     });
@@ -1190,30 +1300,38 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     //  lines.push(this.boundedLine(this.line_points));
     //}
     console.log(this.lines.length);
-    this._line.selectAll('.CTATChart--spline')
+    this._line
+      .selectAll('.CTATChart--spline')
       .data(this.lines)
       .join(
-        enter => enter.append('line')
-          .classed('CTATChart--spline', true)
-          .attr('x1', d => this._x(d.bounded[0].x))
-          .attr('y1', d => this._y(d.bounded[0].y))
-          .attr('x2', d => this._x(d.bounded[1].x))
-          .attr('y2', d => this._y(d.bounded[1].y))
-          .classed('CTAT--correct', d => d.isCorrect)
-          .classed('CTAT--incorrect', d => d.isIncorrect)
-          .classed('CTAT--hint', d => d.isHint),
-        update => update
-          .classed('CTAT--correct', d => d.isCorrect)
-          .classed('CTAT--incorrect', d => d.isIncorrect)
-          .classed('CTAT--hint', d => d.isHint)
-          .transition().duration(500).call(
-            up=>up
-              .attr('x1', d => this._x(d.bounded[0].x))
-              .attr('y1', d => this._y(d.bounded[0].y))
-              .attr('x2', d => this._x(d.bounded[1].x))
-              .attr('y2', d => this._y(d.bounded[1].y))
-          ).selection(),
-        exit => exit.remove());
+        (enter) =>
+          enter
+            .append('line')
+            .classed('CTATChart--spline', true)
+            .attr('x1', (d) => this._x(d.bounded[0].x))
+            .attr('y1', (d) => this._y(d.bounded[0].y))
+            .attr('x2', (d) => this._x(d.bounded[1].x))
+            .attr('y2', (d) => this._y(d.bounded[1].y))
+            .classed('CTAT--correct', (d) => d.isCorrect)
+            .classed('CTAT--incorrect', (d) => d.isIncorrect)
+            .classed('CTAT--hint', (d) => d.isHint),
+        (update) =>
+          update
+            .classed('CTAT--correct', (d) => d.isCorrect)
+            .classed('CTAT--incorrect', (d) => d.isIncorrect)
+            .classed('CTAT--hint', (d) => d.isHint)
+            .transition()
+            .duration(500)
+            .call((up) =>
+              up
+                .attr('x1', (d) => this._x(d.bounded[0].x))
+                .attr('y1', (d) => this._y(d.bounded[0].y))
+                .attr('x2', (d) => this._x(d.bounded[1].x))
+                .attr('y2', (d) => this._y(d.bounded[1].y))
+            )
+            .selection(),
+        (exit) => exit.remove()
+      );
   }
 
   /** Render the axes, points, and line */
@@ -1240,10 +1358,12 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    * @returns :boolean
    */
   pPointVisible(p) {
-    return p.x >= this.dataMinimumX
-      && p.x <= this.dataMaximumX
-      && p.y >= this.dataMinimumY
-      && p.y <= this.dataMaximumY;
+    return (
+      p.x >= this.dataMinimumX &&
+      p.x <= this.dataMaximumX &&
+      p.y >= this.dataMinimumY &&
+      p.y <= this.dataMaximumY
+    );
   }
 
   /**
@@ -1251,8 +1371,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    * @returns :boolean
    */
   pAllPointsVisible() {
-    return this.points.every(
-      p => this.pPointVisible(p));
+    return this.points.every((p) => this.pPointVisible(p));
   }
 
   /**
@@ -1274,9 +1393,11 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   grapherError(error_type) {
     // highlight axes bounds on PointOutOfBounds?
     this.getDivWrap().dispatchEvent(
-      new CustomEvent('grapher',
-                      {bubbles: true,
-                       detail: { text: () => error_type }}));
+      new CustomEvent('grapher', {
+        bubbles: true,
+        detail: { text: () => error_type },
+      })
+    );
     return;
   }
 
@@ -1285,17 +1406,24 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    * @param evt: Event
    */
   handleAction(evt) {
-    if (!evt.detail.sai) { return; } // abort if no sai
+    if (!evt.detail.sai) {
+      return;
+    } // abort if no sai
     const ctrl_name = controller_name(evt.detail.component, this);
     // abort if invalid component
-    if (!ctrl_name || ctrl_name == this.getName()) { return; }
+    if (!ctrl_name || ctrl_name == this.getName()) {
+      return;
+    }
     const action = evt.detail.sai.getAction(),
-          input = evt.detail.sai.getInput();
+      input = evt.detail.sai.getInput();
     // abort if not valid action
-    if (!['ButtonPresed',
-          'Update',
-          'UpdateTextField',
-          'UpdateTextArea'].includes(action)) { return; }
+    if (
+      !['ButtonPresed', 'Update', 'UpdateTextField', 'UpdateTextArea'].includes(
+        action
+      )
+    ) {
+      return;
+    }
     this.setInput(input);
     if (this.dataCtrlMinimumX.includes(ctrl_name)) {
       this.setMinimumX(input);
@@ -1336,55 +1464,57 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   _showCorrect(aSAI) {
     const action = aSAI.getAction();
     switch (action) {
-    case "AddPoint":
-      //console.log(aSAI.getInput());
-      const point = Point.fromJSON(aSAI.getInput());
-      const last_point = this.points[this.points.length-1];
-      last_point.state = STATE.CORRECT;
-      last_point.x = point.x;
-      last_point.y = point.y;
-      this.points = this.points.filter(p => !p.isIncorrect);
-      this.drawPoints();
-      this.drawLine();
-      break;
+      case 'AddPoint':
+        //console.log(aSAI.getInput());
+        const point = Point.fromJSON(aSAI.getInput());
+        const last_point = this.points[this.points.length - 1];
+        last_point.state = STATE.CORRECT;
+        last_point.x = point.x;
+        last_point.y = point.y;
+        this.points = this.points.filter((p) => !p.isIncorrect);
+        this.drawPoints();
+        this.drawLine();
+        break;
 
-    case "AddLine":
-      //console.log(aSAI.getInput());
-      //const line = new Line(...JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y)));
-      //line.state = STATE.CORRECT;
-      //this.lines = this.lines.filter(l => l.equals(line));
-      //this.lines.push(line);
-      // BRD appears to be eating Input
-      this.lines[this.lines.length-1].state = STATE.CORRECT;
-      this.drawLine();
-      break;
+      case 'AddLine':
+        //console.log(aSAI.getInput());
+        //const line = new Line(...JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y)));
+        //line.state = STATE.CORRECT;
+        //this.lines = this.lines.filter(l => l.equals(line));
+        //this.lines.push(line);
+        // BRD appears to be eating Input
+        this.lines[this.lines.length - 1].state = STATE.CORRECT;
+        this.drawLine();
+        break;
 
-    case "ChangeUpperHorizontalBoundary":
-      this.dataCtrlMaximumX.forEach(c => set_correct(c, aSAI));
-      break;
+      case 'ChangeUpperHorizontalBoundary':
+        this.dataCtrlMaximumX.forEach((c) => set_correct(c, aSAI));
+        break;
 
-    case "ChangeUpperVerticalBoundary":
-      this.dataCtrlMaximumY.forEach(c => set_correct(c, aSAI));
-      break;
+      case 'ChangeUpperVerticalBoundary':
+        this.dataCtrlMaximumY.forEach((c) => set_correct(c, aSAI));
+        break;
 
-    case "ChangeLowerHorizontalBoundary":
-      this.dataCtrlMinimumX.forEach(c => set_correct(c, aSAI));
-      break;
+      case 'ChangeLowerHorizontalBoundary':
+        this.dataCtrlMinimumX.forEach((c) => set_correct(c, aSAI));
+        break;
 
-    case "ChangeLowerVerticalBoundary":
-      this.dataCtrlMinimumY.forEach(c => set_correct(c, aSAI));
-      break;
+      case 'ChangeLowerVerticalBoundary':
+        this.dataCtrlMinimumY.forEach((c) => set_correct(c, aSAI));
+        break;
 
-    case "ChangeHorizontalInterval":
-      this.dataCtrlStepX.forEach(c => set_correct(c, aSAI));
-      break;
+      case 'ChangeHorizontalInterval':
+        this.dataCtrlStepX.forEach((c) => set_correct(c, aSAI));
+        break;
 
-    case "ChangeVerticalInterval":
-      this.dataCtrlStepY.forEach(c => set_correct(c, aSAI));
-      break;
+      case 'ChangeVerticalInterval':
+        this.dataCtrlStepY.forEach((c) => set_correct(c, aSAI));
+        break;
 
-    default:
-      console.error(`Unhandled correct Action "${action}" for ${this.getName()}`);
+      default:
+        console.error(
+          `Unhandled correct Action "${action}" for ${this.getName()}`
+        );
     }
   }
 
@@ -1395,53 +1525,57 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   _showInCorrect(aSAI) {
     const action = aSAI.getAction();
     switch (action) {
-    case "AddPoint": {
-      const point = Point.fromJSON(aSAI.getInput());
-      const last_point = this.points[this.points.length-1];
-      last_point.state = STATE.UNGRADED;
-      last_point.x = point.x;
-      last_point.y = point.y;
-      this.points = this.points.filter(p => !p.isIncorrect);
-      last_point.state = STATE.INCORRECT;
-      this.drawPoints();
-      break;
-    }
-    case "AddLine":
-      const line = new Line(...JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y)));
-      line.state = STATE.INCORRECT;
-      this.lines = this.lines.filter(l => l.equals(line));
-      this.lines.push(line);
-      //      this.line_points =
-      //  JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y));
-      this.drawLine();
-      break;
-      
-    case "ChangeUpperHorizontalBoundary":
-      this.dataCtrlMaximumX.forEach(c => set_incorrect(c, aSAI));
-      break;
+      case 'AddPoint': {
+        const point = Point.fromJSON(aSAI.getInput());
+        const last_point = this.points[this.points.length - 1];
+        last_point.state = STATE.UNGRADED;
+        last_point.x = point.x;
+        last_point.y = point.y;
+        this.points = this.points.filter((p) => !p.isIncorrect);
+        last_point.state = STATE.INCORRECT;
+        this.drawPoints();
+        break;
+      }
+      case 'AddLine':
+        const line = new Line(
+          ...JSON.parse(aSAI.getInput()).map((p) => new Point(p.x, p.y))
+        );
+        line.state = STATE.INCORRECT;
+        this.lines = this.lines.filter((l) => l.equals(line));
+        this.lines.push(line);
+        //      this.line_points =
+        //  JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y));
+        this.drawLine();
+        break;
 
-    case "ChangeUpperVerticalBoundary":
-      this.dataCtrlMaximumY.forEach(c => set_incorrect(c, aSAI));
-      break;
+      case 'ChangeUpperHorizontalBoundary':
+        this.dataCtrlMaximumX.forEach((c) => set_incorrect(c, aSAI));
+        break;
 
-    case "ChangeLowerHorizontalBoundary":
-      this.dataCtrlMinimumX.forEach(c => set_incorrect(c, aSAI));
-      break;
+      case 'ChangeUpperVerticalBoundary':
+        this.dataCtrlMaximumY.forEach((c) => set_incorrect(c, aSAI));
+        break;
 
-    case "ChangeLowerVerticalBoundary":
-      this.dataCtrlMinimumY.forEach(c => set_incorrect(c, aSAI));
-      break;
+      case 'ChangeLowerHorizontalBoundary':
+        this.dataCtrlMinimumX.forEach((c) => set_incorrect(c, aSAI));
+        break;
 
-    case "ChangeHorizontalInterval":
-      this.dataCtrlStepX.forEach(c => set_incorrect(c, aSAI));
-      break;
+      case 'ChangeLowerVerticalBoundary':
+        this.dataCtrlMinimumY.forEach((c) => set_incorrect(c, aSAI));
+        break;
 
-    case "ChangeVerticalInterval":
-      this.dataCtrlStepY.forEach(c => set_incorrect(c, aSAI));
-      break;
+      case 'ChangeHorizontalInterval':
+        this.dataCtrlStepX.forEach((c) => set_incorrect(c, aSAI));
+        break;
 
-    default:
-      console.error(`Unhandled incorrect Action "${action}" for ${this.getName()}`);
+      case 'ChangeVerticalInterval':
+        this.dataCtrlStepY.forEach((c) => set_incorrect(c, aSAI));
+        break;
+
+      default:
+        console.error(
+          `Unhandled incorrect Action "${action}" for ${this.getName()}`
+        );
     }
   }
 }

@@ -1,72 +1,72 @@
 .CTATChart {
-    width: 400px;
-    height: 300px;
+  width: 400px;
+  height: 300px;
 }
 .CTATChart .CTAT--cursor {
-    fill: black;
-    opacity: 0;
-    pointer-events: none;
+  fill: black;
+  opacity: 0;
+  pointer-events: none;
 }
 .CTATChart path.CTATChart--point {
-    fill: black;
-    stroke-width: 2;
-    /*stroke: transparent;*/
+  fill: black;
+  stroke-width: 2;
+  /*stroke: transparent;*/
 }
 .CTATChart path.CTATChart--point.CTAT--hint {
-    fill: yellow;
-    /*stroke: rgba(255,50,50,0.6);*/
-    stroke: yellow;
-    fill-opacity: 0.7;
+  fill: yellow;
+  /*stroke: rgba(255,50,50,0.6);*/
+  stroke: yellow;
+  fill-opacity: 0.7;
 }
 .CTATChart path.CTATChart--point.CTAT--incorrect {
-    fill: red;
-    /*stroke: rgba(255,50,50,0.6);*/
-    fill-opacity: 0.7;
+  fill: red;
+  /*stroke: rgba(255,50,50,0.6);*/
+  fill-opacity: 0.7;
 }
 .CTATChart path.CTATChart--point.CTAT--correct {
-    /*stroke: rgba(0,240,0,0.7);*/
-    stroke: limegreen;
-    /*fill: limegreen;*/
-    fill-opacity: 0.7;
+  /*stroke: rgba(0,240,0,0.7);*/
+  stroke: limegreen;
+  /*fill: limegreen;*/
+  fill-opacity: 0.7;
 }
 
 .CTATChart path.CTATChart--out-of-bounds {
-    fill: lightgrey;
-    stroke: black;
-    opacity: 0.8;
-    stroke-width: 1;
+  fill: lightgrey;
+  stroke: black;
+  opacity: 0.8;
+  stroke-width: 1;
 }
 .CTATChart path.CTATChart--out-of-bounds.CTAT--hint {
-    stroke: yellow;
-    fill: yellow;
+  stroke: yellow;
+  fill: yellow;
 }
 .CTATChart path.CTATChart--out-of-bounds.CTAT--incorrect {
-    stroke: red;
-    stroke-dasharray: 5 5;
-    stroke-width: 2;
+  stroke: red;
+  stroke-dasharray: 5 5;
+  stroke-width: 2;
 }
 .CTATChart path.CTATChart--out-of-bounds.CTAT--correct {
-    stroke: limegreen;
+  stroke: limegreen;
 }
 /*.CTATChart--grid .tick {
     opacity: 0.1;
 }*/
 
 .CTATChart g.tick text {
-    user-select: none;
+  user-select: none;
 }
 
 .CTATChart line.CTATChart--spline {
-    stroke-width: 2;
-    stroke: black;
+  stroke-width: 2;
+  stroke: black;
 }
 .CTATChart line.CTATChart--spline.CTAT--hint {
-    stroke: yellow;
+  stroke: yellow;
 }
 .CTATChart line.CTATChart--spline.CTAT--incorrect {
-    stroke: red;
-    stroke-dasharray: 5 5;
+  stroke: red;
+  stroke-dasharray: 5 5;
 }
 .CTATChart line.CTATChart--spline.CTAT--correct {
-    stroke: limegreen;
+  stroke: limegreen;
 }
