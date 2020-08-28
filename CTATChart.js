@@ -1464,7 +1464,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   _showCorrect(aSAI) {
     const action = aSAI.getAction();
     switch (action) {
-      case 'AddPoint':
+      case 'AddPoint': {
         //console.log(aSAI.getInput());
         const point = Point.fromJSON(aSAI.getInput());
         const last_point = this.points[this.points.length - 1];
@@ -1475,7 +1475,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
         this.drawPoints();
         this.drawLine();
         break;
-
+      }
       case 'AddLine':
         //console.log(aSAI.getInput());
         //const line = new Line(...JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y)));
@@ -1536,7 +1536,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
         this.drawPoints();
         break;
       }
-      case 'AddLine':
+      case 'AddLine': {
         const line = new Line(
           ...JSON.parse(aSAI.getInput()).map((p) => new Point(p.x, p.y))
         );
@@ -1547,7 +1547,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
         //  JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y));
         this.drawLine();
         break;
-
+      }
       case 'ChangeUpperHorizontalBoundary':
         this.dataCtrlMaximumX.forEach((c) => set_incorrect(c, aSAI));
         break;
