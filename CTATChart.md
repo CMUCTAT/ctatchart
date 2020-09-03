@@ -65,20 +65,20 @@ Valid CTAT controller components include [CTATButton](https://github.com/CMUCTAT
 
 In addition to the common Actions listed in [Often Used TPAs](https://github.com/CMUCTAT/CTAT/wiki/Dynamic-interfaces#often-used-tpas) this component supports the following actions:
 
-| Action                        | Input     | Notes |
-| :--:                          | :--:      | :-- |
-| AddPoint                      | a point   | point := `{"x": &lt;number&gt;, "y": &lt;number&gt;}` |
-| AddLine                       | a line    | line := `[&lt;point&gt;, &lt;point&gt;]` |
-| ChangeLowerHorizontalBoundary | a number  | Changes ctat-data-minimum-x |
-| ChangeLowerVerticalBoundary   | a number  | Changes ctat-data-minimum-y |
-| ChangeUpperHorizontalBoundary | a number  | Changes ctat-data-maximum-x |
-| ChangeUpperVerticalBoundary   | a number  | Changes ctat-data-maximum-y |
-| EnableLineDrawing             | boolean   | Changes ctat-data-enable-line-drawing for tutor enabling of line drawing. |
-| grapherError                  | a string  | Only emitted by CTATChart (should not be used in TPA) with a value of either 'PointOutOfBounds' if the bounds were changed such that at least one point is outside the chart or 'curveNeedsMorePoints' if line drawing is attempted when there are not enough points in the graph. |
+| Action                        | Input   | Notes |
+| :--:                          | :--:    | :-- |
+| AddPoint                      | point   | point := `{"x": number, "y": number}` |
+| AddLine                       | line    | line := `[point, point]` |
+| ChangeLowerHorizontalBoundary | number  | Changes `ctat-data-minimum-x` |
+| ChangeLowerVerticalBoundary   | number  | Changes `ctat-data-minimum-y` |
+| ChangeUpperHorizontalBoundary | number  | Changes `ctat-data-maximum-x` |
+| ChangeUpperVerticalBoundary   | number  | Changes `ctat-data-maximum-y` |
+| EnableLineDrawing             | boolean | Changes `ctat-data-enable-line-drawing` for tutor enabling of line drawing. |
+| grapherError                  | string  | Only emitted by CTATChart (should not be used in TPA) with a value of either 'PointOutOfBounds' if the bounds were changed such that at least one point is outside the chart or 'curveNeedsMorePoints' if line drawing is attempted when there are not enough points in the graph. |
 
 ## Styling
 
-Here is a list of the default styles included in CTAT.css that govern various aspects of the look of the number line.
+Here is a list of the default styles included with CTATChart which govern various aspects of the look of the chart.
 
 ```css
 .CTATChart {
@@ -157,6 +157,5 @@ Example for mass producing the minimum, maximum, and tick marks for a CTATChart:
   data-ctat-minimum-x="%(x-min)%"
   data-ctat-maximum-x="%(x-max)%"
   data-ctat-minimum-y="%(y-min)%"
-  data-ctat-maximum-y="%(y-max)%"
-></div>
+  data-ctat-maximum-y="%(y-max)%"></div>
 ```
