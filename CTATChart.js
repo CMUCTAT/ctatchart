@@ -844,7 +844,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const x = bounded(0, this._x);
     this._yAxis
       .transition(transition)
-      .call(g => g.attr('transform', `translate(${x},0)`));
+      .call((g) => g.attr('transform', `translate(${x},0)`));
     /*this._xAxisGrid.selectAll('CTATChart--0axis')
       .data([0])
       .join(
@@ -902,7 +902,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const y = bounded(0, this._y);
     this._xAxis
       .transition(transition)
-      .call(g => g.attr('transform', `translate(0,${y})`));
+      .call((g) => g.attr('transform', `translate(0,${y})`));
   }
 
   get dataLineDrawingEnabled() {
@@ -975,7 +975,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const mousemove = (x, y) => {
       if (this.getEnabled()) {
         const point = this.getValueForPixel(x, y);
-        //const x0 = this._x(point.x), y0 = this._y(point.y);
         cursor.attr('cx', this._x(point.x)).attr('cy', this._y(point.y));
         const lines = [];
         if (this.line_points.length === 1) {
@@ -983,34 +982,11 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           line.push(point);
           lines.push(this.boundedLine(line));
         }
-        this._line
-          .selectAll('.drawline')
-          .data(lines)
-          .join(
-            (enter) =>
-              enter
-                .append('line')
-                .classed('drawline', true)
-                .attr('x1', (d) => this._x(d[0].x))
-                .attr('y1', (d) => this._y(d[0].y))
-                .attr('x2', (d) => this._x(d[1].x))
-                .attr('y2', (d) => this._y(d[1].y))
-                .attr('stroke-width', 2)
-                .attr('stroke', 'grey'),
-            (update) =>
-              update.call((update) =>
-                update
-                  .attr('x1', (d) => this._x(d[0].x))
-                  .attr('y1', (d) => this._y(d[0].y))
-                  .attr('x2', (d) => this._x(d[1].x))
-                  .attr('y2', (d) => this._y(d[1].y))
-              ),
-            (exit) => exit.remove()
-          );
+        this.drawCursorLine(lines);
       }
     };
     svg.on('mousemove', function (evt) {
-      const coords = d3.pointer(evt); //d3.mouse(this);
+      const coords = d3.pointer(evt);
       mousemove(coords[0], coords[1]);
     });
     svg.on(
@@ -1034,25 +1010,34 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           const epoint = this.points.find((p) => p.at(point.x, point.y));
           if (epoint.isValid) {
             if (this.dataLineDrawingEnabled) {
+              // if drawing enabled
               const correctPoints = this.points.filter((p) => p.isValid);
               if (correctPoints.length >= 2) {
+                // if more than 1 valid point
+                // if point already in line definition
                 const inline = this.line_points.some((point) =>
                   point.at(epoint.x, epoint.y)
                 );
                 if (inline) {
+                  // Remove point from line definition if already in line.
+                  // Effectively stops line drawing.
                   this.line_points = this.line_points.filter(
                     (p) => !p.at(epoint.x, epoint.y)
                   );
+                  this.drawCursorLine([]);
                   this.drawLine();
                 } else {
                   this.line_points.push(epoint);
                   if (this.line_points.length >= 2) {
                     const line = new Line(...this.line_points);
-                    this.lines.push(line);
                     this.line_points = [];
-                    this.setAction('AddLine');
-                    this.setInput(JSON.stringify(line.toJSON()));
-                    this.processAction();
+                    if (!this.lines.some((l) => l.equals(line))) {
+                      this.lines.push(line);
+                      this.setAction('AddLine');
+                      this.setInput(JSON.stringify(line.toJSON()));
+                      this.processAction();
+                    }
+                    this.drawCursorLine([]);
                     this.drawLine();
                   }
                 }
@@ -1076,7 +1061,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       }
     };
     svg.on('click', function (evt) {
-      const coords = d3.pointer(evt); //d3.mouse(this);
+      const coords = d3.pointer(evt);
       add_point(coords[0], coords[1]);
     });
 
@@ -1102,7 +1087,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   _updateSAI() {
     // This builds the representation of the entire chart
     this.setAction('Graph');
-    //const equation = this.getEquation();
     this.setInput(
       JSON.stringify({
         points: this.points.map((p) => p.toJSON()),
@@ -1290,21 +1274,44 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       { x: x2, y: y2 },
     ];
   }
+
+  /** Render the anchored line that follows cursor */
+  drawCursorLine(lines) {
+    if (!this._line) return;
+    this._line
+      .selectAll('.drawline')
+      .data(lines)
+      .join(
+        (enter) =>
+          enter
+            .append('line')
+            .classed('drawline', true)
+            .attr('x1', (d) => this._x(d[0].x))
+            .attr('y1', (d) => this._y(d[0].y))
+            .attr('x2', (d) => this._x(d[1].x))
+            .attr('y2', (d) => this._y(d[1].y))
+            .attr('stroke-width', 2)
+            .attr('stroke', 'grey'),
+        (update) =>
+          update.call((update) =>
+            update
+              .attr('x1', (d) => this._x(d[0].x))
+              .attr('y1', (d) => this._y(d[0].y))
+              .attr('x2', (d) => this._x(d[1].x))
+              .attr('y2', (d) => this._y(d[1].y))
+          ),
+        (exit) => exit.remove()
+      );
+  }
   /** Render the line if defined. */
   drawLine() {
     if (this._line === null) {
       return;
     }
-    //const correctPoints = this.points.filter(p => p.isCorrect);
-    //this.lines.map(l => console.log(this.boundedLine(l.points)));
     this.lines.map((l) => {
       l.bounded = this.boundedLine(l.points);
       return l;
     });
-    //if (this.line_points.length > 1) {
-    //  lines.push(this.boundedLine(this.line_points));
-    //}
-    console.log(this.lines.length);
     this._line
       .selectAll('.CTATChart--spline')
       .data(this.lines)
@@ -1488,6 +1495,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
         //this.lines = this.lines.filter(l => l.equals(line));
         //this.lines.push(line);
         // BRD appears to be eating Input
+        // As the interface should be locked during grading we can probably
+        // safely assume the grading event is for the last line added.
         this.lines[this.lines.length - 1].state = STATE.CORRECT;
         this.drawLine();
         break;
@@ -1542,12 +1551,13 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
         break;
       }
       case 'AddLine': {
-        const line = new Line(
-          ...JSON.parse(aSAI.getInput()).map((p) => new Point(p.x, p.y))
-        );
-        line.state = STATE.INCORRECT;
-        this.lines = this.lines.filter((l) => l.equals(line));
-        this.lines.push(line);
+        //const line = new Line(
+        //  ...JSON.parse(aSAI.getInput()).map((p) => new Point(p.x, p.y))
+        //);
+        //line.state = STATE.INCORRECT;
+        //this.lines = this.lines.filter((l) => l.equals(line));
+        //this.lines.push(line);
+        this.lines[this.lines.length - 1].state = STATE.INCORRECT;
         //      this.line_points =
         //  JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y));
         this.drawLine();
