@@ -405,11 +405,11 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    * @returns :boolean
    */
   get dataIsSnapping() {
-    const snap = this.getDivWrap().getAttribute('data-ctat-snapping');
+    const snap = this.getDivWrap().getAttribute('data-ctat-snap');
     return snap ? CTATGlobalFunctions.stringToBoolean(snap) : true;
   }
   set dataIsSnapping(val) {
-    this.getDivWrap().setAttribute('data-ctat-snapping', `${val}`);
+    this.getDivWrap().setAttribute('data-ctat-snap', `${val}`);
   }
 
   /**
@@ -417,11 +417,11 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    * @returns :boolean
    */
   get dataLineSnapping() {
-    const snap = this.getDivWrap().getAttribute('data-ctat-line-snapping');
+    const snap = this.getDivWrap().getAttribute('data-ctat-line-snap');
     return snap ? CTATGlobalFunctions.stringToBoolean(snap) : true;
   }
   set dataLineSnapping(val) {
-    this.getDivWrap().setAttribute('data-ctat-line-snapping', `${val}`);
+    this.getDivWrap().setAttribute('data-ctat-line-snap', `${val}`);
   }
 
   /**

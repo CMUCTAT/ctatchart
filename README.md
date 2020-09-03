@@ -10,7 +10,6 @@ independently.
 It requires the following pier libraries:
 
 - [CTAT](https://cdn.ctat.cmu.edu/latest/ctat.min.js)
-- jQuery
 
 ## Installation
 
@@ -25,6 +24,12 @@ Add the following to the custom javascript file:
 As `CTATChart` registers itself with CTAT, exporting is not strictly necessary,
 but when used with building tools that does tree shaking, exporting it will make
 sure that it is included.
+
+## Component Documentation
+
+[CTATChart](./CTATChart.md)
+
+[CTATChart Examples](https://ringenbergctat.gitlab.io/ctatchart/)
 
 ## Thanks
 
