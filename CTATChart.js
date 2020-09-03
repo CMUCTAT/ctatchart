@@ -824,9 +824,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .reverse()
       .concat(d3.range(0, this.dataMaximumX + delta, delta))
       .filter((v) => v <= this.dataMaximumX && v >= this.dataMinimumX);
-    //const ticks = d3.range(this.dataMinimumX,
-    //                       this.dataMaximumX + 1,
-    //                       this.dataStepX);
     this._xAxisGrid
       .transition(transition)
       .call(
@@ -844,6 +841,10 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .transition(transition)
       //.call(g => g.attr('transform', `translate(0,${this._y(0)})`))
       .call(this._xAxisCall.scale(this._x).tickValues(ticks));
+    const x = bounded(0, this._x);
+    this._yAxis
+      .transition(transition)
+      .call(g => g.attr('transform', `translate(${x},0)`));
     /*this._xAxisGrid.selectAll('CTATChart--0axis')
       .data([0])
       .join(
@@ -898,6 +899,10 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this._yAxis
       .transition(transition)
       .call(this._yAxisCall.scale(this._y).tickValues(ticks));
+    const y = bounded(0, this._y);
+    this._xAxis
+      .transition(transition)
+      .call(g => g.attr('transform', `translate(0,${y})`));
   }
 
   get dataLineDrawingEnabled() {
