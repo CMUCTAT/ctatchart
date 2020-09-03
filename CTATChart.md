@@ -27,8 +27,7 @@ User can add multiple points to the chart with x and y bounds of 0 and 10:
   data-ctat-minimum-x="0"
   data-ctat-maximum-x="10"
   data-ctat-minimum-y="0"
-  data-ctat-maximum-y="10"
-></div>
+  data-ctat-maximum-y="10"></div>
 ```
 
 ## Running Example
@@ -60,7 +59,7 @@ User can add multiple points to the chart with x and y bounds of 0 and 10:
 - `data-ctat-ctrl-step-x`: A list of ';' deliminated ids of CTAT controller components that the user can interact with to change the X axis scale. Default is "".
 - `data-ctat-ctrl-step-y`: A list of ';' deliminated ids of CTAT controller components that the user can interact with to change the Y axis scale. Default is "".
 
-Valid CTAT controller components include [CTATButton](https://github.com/CMUCTAT/CTAT/wiki/CTATButton), [CTATImageButton](https://github.com/CMUCTAT/CTAT/wiki/CTATImageButton), [CTATTextInput](https://github.com/CMUCTAT/CTAT/wiki/CTATTextInput), and [CTATNumericStepper](https://github.com/CMUCTAT/CTAT/wiki/CTATNumericStepper). [CTATSubmitButton]https://github.com/CMUCTAT/CTAT/wiki/CTATSubmitButton) can also be used as a controller component to do grading on demand for the associated part of the number line; for example, it can be configured to submit just the minimum X axis value for grading.
+Valid CTAT controller components include [CTATButton](https://github.com/CMUCTAT/CTAT/wiki/CTATButton), [CTATImageButton](https://github.com/CMUCTAT/CTAT/wiki/CTATImageButton), [CTATTextInput](https://github.com/CMUCTAT/CTAT/wiki/CTATTextInput), and [CTATNumericStepper](https://github.com/CMUCTAT/CTAT/wiki/CTATNumericStepper). [CTATSubmitButton](https://github.com/CMUCTAT/CTAT/wiki/CTATSubmitButton) can also be used as a controller component to do grading on demand for the associated part of the number line; for example, it can be configured to submit just the minimum X axis value for grading.
 
 ## Action-Input
 
