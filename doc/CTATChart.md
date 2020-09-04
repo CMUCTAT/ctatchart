@@ -30,6 +30,53 @@ User can add multiple points to the chart with x and y bounds of 0 and 10:
   data-ctat-maximum-y="10"></div>
 ```
 
+### CTATGrapher replacer:
+
+```html
+<div class="CTATGrapher">
+  <div class="CTATGrapher-title"><h3>Title</h3></div>
+  <div class="CTATGrapher-top">
+    <div>
+      <span>X Scale:</span>
+      <div id="graph1-step-x" class="CTATNumericStepper"
+           data-ctat-tutor="false" value="1"></div>
+    </div>
+    <div>
+      <span>Y Scale:</span>
+      <div id="graph1-step-y" class="CTATNumericStepper"
+           data-ctat-tutor="false" value="1"></div>
+    </div>
+  </div>
+  <div class="CTATGrapher-y">
+    <div id="graph1-max-y" class="CTATNumericStepper" data-ctat-tutor="false" value="10"></div>
+    <div id="graph1-label-y" class="CTATTextInput"></div>
+    <div id="graph1-unit-y" class="CTATTextInput"></div>
+    <div id="graph1-min-y" class="CTATNumericStepper" data-ctat-tutor="false" value="0"></div>
+  </div>
+  <div id="graph1" class="CTATChart"
+       aria-label="Tutorable interactive two dimension data chart"
+       role="img"
+       data-ctat-disable-on-correct="false"
+       data-ctat-ctrl-minimum-x="graph1-min-x"
+       data-ctat-ctrl-maximum-x="graph1-max-x"
+       data-ctat-ctrl-step-x="graph1-step-x"
+       data-ctat-ctrl-minimum-y="graph1-min-y"
+       data-ctat-ctrl-maximum-y="graph1-max-y"
+       data-ctat-ctrl-step-y="graph1-step-y"></div>
+  <div class="CTATGrapher-x">
+    <div id="graph1-min-x" class="CTATNumericStepper" data-ctat-tutor="false" value="10"></div>
+    <div id="graph1-label-x" class="CTATTextInput"></div>
+    <div id="graph1-unit-x" class="CTATTextInput"></div>
+    <div id="graph1-max-x" class="CTATNumericStepper" data-ctat-tutor="false" value="0"></div>
+  </div>
+</div>
+```
+
+Notes: the CTATGrapher class is for layout and is not an actual CTAT component.
+These classes are included with CTATChart and are inteded to be used with this
+template in order to help with the migration of the CTATGrapher compoent from
+CTAT v2.
+
 ## Running Example
 
 [CTATChart Examples](https://ringenbergctat.gitlab.io/ctatchart/)

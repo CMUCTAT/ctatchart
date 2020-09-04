@@ -25,31 +25,30 @@
         </ol>
       </p>
       <div style="width: 400px;" class="CTATTable" id="c1table" data-ctat-num-rows="6" data-ctat-num-cols="2"></div>
-      <div class="chart">
-        <div class="top">
+      <div class="CTATGrapher">
+        <h3 class="CTATGrapher-title">X vs Y</h3>
+        <div class="CTATGrapher-top">
           <div><span>X Scale:</span><div id="stepx" class="CTATNumericStepper" data-ctat-tutor="false" value="1"></div></div>
           <div><span>Y Scale:</span><div id="stepy" class="CTATNumericStepper" data-ctat-tutor="false" value="1"></div></div>
         </div>
-        <div class="main">
-          <div class="axis-y">
-            <div id="maxy" class="CTATNumericStepper" data-ctat-tutor="false" value="10"></div>
+        <div class="CTATGrapher-y">
+          <div id="maxy" class="CTATNumericStepper" data-ctat-tutor="false" value="10"></div>
           <div id="labely" class="CTATTextInput"></div>
           <div id="unity" class="CTATTextInput"></div>
-            <div id="miny" class="CTATNumericStepper" data-ctat-tutor="false" value="0"></div>
-          </div>
-          <div id="chart1" class="CTATChart"
-               data-ctat-disable-on-correct="false"
-               data-ctat-ctrl-minimum-x="minx"
-               data-ctat-ctrl-maximum-x="maxx"
-               data-ctat-ctrl-step-x="stepx"
-               data-ctat-ctrl-minimum-y="miny"
-               data-ctat-ctrl-maximum-y="maxy"
-               data-ctat-ctrl-step-y="stepy"
-               aria-label="Two dimension data chart"
-               role="img">
-          </div>
+          <div id="miny" class="CTATNumericStepper" data-ctat-tutor="false" value="0"></div>
         </div>
-        <div class="bottom">
+        <div id="chart1" class="CTATChart"
+             data-ctat-disable-on-correct="false"
+             data-ctat-ctrl-minimum-x="minx"
+             data-ctat-ctrl-maximum-x="maxx"
+             data-ctat-ctrl-step-x="stepx"
+             data-ctat-ctrl-minimum-y="miny"
+             data-ctat-ctrl-maximum-y="maxy"
+             data-ctat-ctrl-step-y="stepy"
+             aria-label="Two dimension data chart"
+             role="img">
+        </div>
+        <div class="CTATGrapher-x">
           <div id="minx" class="CTATNumericStepper" data-ctat-tutor="false" value="0"></div>
           <div id="labelx" class="CTATTextInput"></div>
           <div id="unitx" class="CTATTextInput"></div>
