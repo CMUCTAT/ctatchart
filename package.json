@@ -9,7 +9,7 @@
     "build": "parcel build demo/*.html --public-url ./",
     "demo": "parcel demo/index.html",
     "lint": "eslint src/CTATChart.js",
-    "prepublish": "webpack -p",
+    "prepare": "webpack -p",
     "test": "ava"
   },
   "repository": {
