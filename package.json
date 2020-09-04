@@ -2,7 +2,8 @@
   "name": "ctatchart",
   "version": "1.0.0",
   "description": "CTAT component for working with two dimensional charts.",
-  "main": "CTATChart.js",
+  "private": true,
+  "main": "lib/CTATChart.js",
   "scripts": {
     "start": "parcel serve demo/*.html",
     "build": "parcel build demo/*.html --public-url ./",
@@ -29,19 +30,26 @@
     "url": "https://gitlab.com/RingenbergCTAT/ctatchart/issues"
   },
   "homepage": "https://gitlab.com/RingenbergCTAT/ctatchart#readme",
+  "files": [
+    "/lib/**/*.js"
+  ],
   "dependencies": {
-    "@babel/compat-data": "^7.11.0",
     "d3": "^6.1.1",
     "jquery": "^3.5.1"
   },
   "devDependencies": {
+    "@babel/compat-data": "^7.11.0",
     "ava": "^3.12.1",
     "browser-env": "^3.3.0",
+    "css-loader": "^4.2.2",
     "deasync": "^0.1.20",
     "eslint": "^7.8.1",
     "eslint-config-prettier": "^6.11.0",
     "parcel": "^1.12.4",
     "prettier": "2.1.1",
-    "puppeteer": "^5.2.1"
+    "puppeteer": "^5.2.1",
+    "style-loader": "^1.2.1",
+    "webpack": "^4.44.1",
+    "webpack-cli": "^3.3.12"
   }
 }
