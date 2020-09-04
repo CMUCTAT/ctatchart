@@ -1,7 +1,7 @@
 {
   "name": "ctatchart",
   "version": "1.0.0",
-  "description": "CTAT component for working with two dimensional charts.",
+  "description": "CTAT component for interacting with two dimensional charts.",
   "private": true,
   "main": "lib/CTATChart.js",
   "scripts": {
@@ -9,7 +9,9 @@
     "build": "parcel build demo/*.html --public-url ./",
     "demo": "parcel demo/index.html",
     "lint": "eslint src/CTATChart.js",
+    "pretty": "prettier --check src",
     "prepare": "webpack -p",
+    "precommit": "npm-run-all lint pretty test",
     "test": "ava"
   },
   "repository": {
@@ -47,11 +49,15 @@
     "deasync": "^0.1.20",
     "eslint": "^7.8.1",
     "eslint-config-prettier": "^6.11.0",
+    "npm-run-all": "^4.1.5",
     "parcel": "^1.12.4",
     "prettier": "2.1.1",
     "puppeteer": "^5.2.1",
     "style-loader": "^1.2.1",
     "webpack": "^4.44.1",
     "webpack-cli": "^3.3.12"
+  },
+  "publishConfig": {
+    "@RingenbergCTAT:registry": "https://gitlab.com/api/v4/projects/17465292/packages/npm/"
   }
 }
