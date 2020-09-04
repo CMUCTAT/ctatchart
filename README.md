@@ -29,7 +29,7 @@ sure that it is included.
 
 ## Component Documentation
 
-[CTATChart](./CTATChart.md)
+[CTATChart](./doc/CTATChart.md)
 
 [CTATChart Examples](https://ringenbergctat.gitlab.io/ctatchart/)
 
