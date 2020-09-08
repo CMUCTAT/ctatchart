@@ -11,6 +11,7 @@
  *  ChangeHorizontalInterval (:number)
  *  ChangeVerticalInterval (:number)
  *  AddPoint (<point>)
+ *  RemovePoint (<point>)
  *  grapherError ('PointOutOfBounds'|'curveNeedsMorePoints')
  *     - When changing boundary results in point out of bounds.
  *     - When less than 2 correct points are available.
@@ -1050,6 +1051,10 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
             }
           } else {
             this.removePoint(point.x, point.y);
+            this._tooltip.transition().duration(200).style('opacity', 0);
+            this.setAction('RemovePoint');
+            this.setInput(JSON.stringify(point.toJSON()));
+            this.processAction(false, true);
           }
         } else {
           //console.log('Adding new point:', point);
@@ -1079,9 +1084,9 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    * Generate the representation of the line.
    * @returns :string[] - list of Points.toJSON() strings
    */
-  getEquation() {
+  /* getEquation() {
     return this.line_points;
-  }
+  } */
 
   /** Update the current SAI. (clobbers super.updateSAI()) */
   _updateSAI() {
@@ -1199,11 +1204,28 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    * Add the point to the chart.
    * @param json: string - the Point.toJSON() representation of a point.
    */
-  /*AddPoint(json) {
+  AddPoint(json) {
+    const enabled = this.getEnabled();
+    this.setEnabled(false);
     const point = Point.fromJSON(json);
-    this.points.push(point);
-    this.drawPoints();
-  }*/
+    if(!this.isPoint(point.x, point.y)) {
+      this.points.push(point);
+      this.drawPoints();
+    }
+    this.setEnabled(enabled);
+  }
+  /** TPA
+   * Add the point to the chart.
+   * @param json: string - the Point.toJSON() representation of a point.
+   */
+  RemovePoint(json) {
+    const enabled = this.getEnabled();
+    this.setEnabled(false);
+    const point = Point.fromJSON(json);
+    this.removePoint(point.x, point.y);
+    this.setEnabled(enabled);
+  }
+    
 
   /**
    * Add a point at the given value coordinates.
@@ -1358,11 +1380,14 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    * Add the line defined by a set of two points.
    * @param equation: string[] - strings are of the form Point.toJSON()
    */
-  /*AddLine(equation) {
-    this.line_points =
-      new Set(JSON.parse(equation).map(p => new Point(p.x,p.y)));
-    this.drawLine();
-  }*/
+  AddLine(equation) {
+    console.log(equation);
+    const line = new Line(...JSON.parse(equation).map(p => new Point(p.x,p.y)));
+    if (!this.lines.some((l) => l.equals(line))) {
+      this.lines.push(line);
+      this.drawLine();
+    }
+  }
 
   /**
    * Test if the given point is within the chart's bounds.

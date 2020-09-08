@@ -115,6 +115,7 @@ In addition to the common Actions listed in [Often Used TPAs](https://github.com
 | Action                        | Input   | Notes |
 | :--:                          | :--:    | :-- |
 | AddPoint                      | point   | point := `{"x": number, "y": number}` |
+| RemovePoint                   | point   | |
 | AddLine                       | line    | line := `[point, point]` |
 | ChangeLowerHorizontalBoundary | number  | Changes `ctat-data-minimum-x` |
 | ChangeLowerVerticalBoundary   | number  | Changes `ctat-data-minimum-y` |
