@@ -1208,7 +1208,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const enabled = this.getEnabled();
     this.setEnabled(false);
     const point = Point.fromJSON(json);
-    if(!this.isPoint(point.x, point.y)) {
+    if (!this.isPoint(point.x, point.y)) {
       this.points.push(point);
       this.drawPoints();
     }
@@ -1225,7 +1225,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this.removePoint(point.x, point.y);
     this.setEnabled(enabled);
   }
-    
 
   /**
    * Add a point at the given value coordinates.
@@ -1382,7 +1381,9 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    */
   AddLine(equation) {
     console.log(equation);
-    const line = new Line(...JSON.parse(equation).map(p => new Point(p.x,p.y)));
+    const line = new Line(
+      ...JSON.parse(equation).map((p) => new Point(p.x, p.y))
+    );
     if (!this.lines.some((l) => l.equals(line))) {
       this.lines.push(line);
       this.drawLine();

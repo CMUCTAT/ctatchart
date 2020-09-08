@@ -73,18 +73,18 @@
 
 /* Convenience style for CTATGrapher replacement */
 .CTATGrapher {
-    width: 510px;
-    display: grid;
-    grid-template-columns: auto auto;
-    box-sizing: border-box;
-    padding: 5px;
-    border: 1px solid darkgrey;
-    border-radius: 5px;
+  width: 510px;
+  display: grid;
+  grid-template-columns: auto auto;
+  box-sizing: border-box;
+  padding: 5px;
+  border: 1px solid darkgrey;
+  border-radius: 5px;
 }
 .CTATGrapher-title {
-    grid-column-start: 1;
-    grid-column-end: 3;
-    margin: auto;
+  grid-column-start: 1;
+  grid-column-end: 3;
+  margin: auto;
 }
 .CTATGrapher-top {
   grid-column-start: 2;
@@ -93,7 +93,7 @@
   justify-content: flex-end;
 }
 .CTATGrapher-top > div {
-    margin-left: 1em;
+  margin-left: 1em;
 }
 .CTATGrapher-y {
   display: flex;
