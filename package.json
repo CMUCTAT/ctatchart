@@ -2,7 +2,7 @@
   "name": "ctatchart",
   "version": "1.0.1",
   "description": "CTAT component for interacting with two dimensional charts.",
-  "private": true,
+  "private": false,
   "main": "lib/CTATChart.js",
   "scripts": {
     "start": "parcel serve demo/*.html",
