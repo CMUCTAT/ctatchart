@@ -1,6 +1,6 @@
 {
   "name": "@RingenbergCTAT/ctatchart",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "CTAT component for interacting with two dimensional charts.",
   "private": false,
   "main": "lib/CTATChart.js",
