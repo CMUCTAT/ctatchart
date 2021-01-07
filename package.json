@@ -10,7 +10,7 @@
     "demo": "parcel demo/index.html",
     "lint": "eslint src/CTATChart.js",
     "pretty": "prettier --check src",
-    "prepare": "webpack --env prod",
+    "prepare": "webpack --mode production",
     "precommit": "npm-run-all lint pretty test",
     "test": "ava"
   },
