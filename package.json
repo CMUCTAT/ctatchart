@@ -39,7 +39,7 @@
   ],
   "dependencies": {
     "d3": "^6.5.0",
-    "jquery": "^3.5.1"
+    "jquery": "^3.6.0"
   },
   "devDependencies": {
     "@babel/compat-data": "^7.13.8",
@@ -54,7 +54,7 @@
     "prettier": "^2.2.1",
     "puppeteer": "^8.0.0",
     "style-loader": "^2.0.0",
-    "webpack": "^5.24.2",
+    "webpack": "^5.24.4",
     "webpack-cli": "^4.5.0"
   },
   "publishConfig": {
