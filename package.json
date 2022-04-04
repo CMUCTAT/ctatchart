@@ -4,6 +4,7 @@
   "description": "CTAT component for interacting with two dimensional charts.",
   "private": false,
   "main": "lib/CTATChart.js",
+  "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "start": "parcel serve demo/*.html",
     "build": "parcel build demo/*.html --public-url ./",
@@ -38,22 +39,24 @@
     "/doc/**/*"
   ],
   "dependencies": {
-    "d3": "^7.3.0",
+    "d3": "^7.4.2",
     "jquery": "^3.6.0"
   },
   "devDependencies": {
-    "@babel/compat-data": "^7.17.0",
-    "ava": "^4.0.1",
+    "@babel/compat-data": "^7.17.7",
+    "@parcel/config-default": "^2.4.1",
+    "@parcel/transformer-raw": "^2.4.1",
+    "ava": "^4.1.0",
     "browser-env": "^3.3.0",
-    "css-loader": "^6.6.0",
-    "deasync": "^0.1.24",
-    "eslint": "^8.8.0",
-    "eslint-config-prettier": "^8.3.0",
+    "css-loader": "^6.7.1",
+    "deasync": "^0.1.26",
+    "eslint": "^8.12.0",
+    "eslint-config-prettier": "^8.5.0",
     "npm-run-all": "^4.1.5",
-    "parcel-bundler": "^1.12.5",
-    "prettier": "^2.5.1",
+    "parcel": "^2.4.1",
+    "prettier": "^2.6.2",
     "style-loader": "^3.3.1",
-    "webpack": "^5.68.0",
+    "webpack": "^5.71.0",
     "webpack-cli": "^4.9.2"
   },
   "publishConfig": {
