@@ -3,7 +3,6 @@
   "version": "1.0.4",
   "description": "CTAT component for interacting with two dimensional charts.",
   "private": false,
-  "main": "lib/CTATChart.js",
   "browserslist": "> 0.5%, last 2 versions, not dead",
   "scripts": {
     "start": "parcel serve demo/*.html",
@@ -11,7 +10,7 @@
     "demo": "parcel demo/index.html",
     "lint": "eslint src/CTATChart.js",
     "pretty": "prettier --check src",
-    "prepare": "npm run build",
+    "prepare": "npm run build && parcel build demo/index.html",
     "precommit": "npm-run-all lint pretty test",
     "test": "ava"
   },
