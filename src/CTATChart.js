@@ -1058,7 +1058,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           }
         } else {
           //console.log('Adding new point:', point);
-          this.addPoint(point.x, point.y);
+          //this.addPoint(point.x, point.y);
           this.setAction('AddPoint');
           this.setInput(JSON.stringify(point.toJSON()));
           this.processAction();
