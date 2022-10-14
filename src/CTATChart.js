@@ -292,8 +292,6 @@ class Line extends Graded {
     return new Line(...parse.map((p) => new Point(p.x, p.y)));
   }
   equals(line) {
-    console.log(this, line);
-    console.log(this.vector, line.vector);
     const a = this.vector;
     const b = line.vector;
     const e = 0.0001;
@@ -837,7 +835,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .call((g) => g.selectAll('.tick').attr('opacity', 0.1))
       .call((g) => g.selectAll('.domain').attr('opacity', 0))
       .call((g) => g.selectAll('.domain').remove());
-    //console.log(this._y(0));
     this._xAxis
       .transition(transition)
       //.call(g => g.attr('transform', `translate(0,${this._y(0)})`))
@@ -1007,62 +1004,15 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const add_point = (x, y) => {
       if (this.getEnabled()) {
         const point = this.getValueForPixel(x, y);
-        /*if (this.isPoint(point.x, point.y)) {
+        if (this.isPoint(point.x, point.y)) {
           const epoint = this.points.find((p) => p.at(point.x, point.y));
-          if (epoint.isValid) {
-            if (this.dataLineDrawingEnabled) {
-              // if drawing enabled
-              const correctPoints = this.points.filter((p) => p.isValid);
-              if (correctPoints.length >= 2) {
-                // if more than 1 valid point
-                // if point already in line definition
-                const inline = this.line_points.some((point) =>
-                  point.at(epoint.x, epoint.y)
-                );
-                if (inline) {
-                  // Remove point from line definition if already in line.
-                  // Effectively stops line drawing.
-                  this.line_points = this.line_points.filter(
-                    (p) => !p.at(epoint.x, epoint.y)
-                  );
-                  this.drawCursorLine([]);
-                  this.drawLine();
-                } else {
-                  this.line_points.push(epoint);
-                  if (this.line_points.length >= 2) {
-                    const line = new Line(...this.line_points);
-                    this.line_points = [];
-                    if (!this.lines.some((l) => l.equals(line))) {
-                      this.lines.push(line);
-                      this.setAction('AddLine');
-                      this.setInput(JSON.stringify(line.toJSON()));
-                      this.processAction();
-                    }
-                    this.drawCursorLine([]);
-                    this.drawLine();
-                  }
-                }
-              } else {
-                // "throw" error
-                this.setAction('grapherError');
-                this.setInput('curveNeedsMorePoints');
-                this.processAction(false, true);
-              }
-            }
-          } else {
-            this.removePoint(point.x, point.y);
-            this._tooltip.transition().duration(200).style('opacity', 0);
-            this.setAction('RemovePoint');
-            this.setInput(JSON.stringify(point.toJSON()));
-            this.processAction(false, true);
-          }
-        } else {*/
-          //console.log('Adding new point:', point);
-          this.addPoint(point.x, point.y);
+          this.handleLineOrRemove(epoint);
+        } else {
+          // this.addPoint(point.x, point.y); // Proposed fix for #1
           this.setAction('AddPoint');
           this.setInput(JSON.stringify(point.toJSON()));
           this.processAction();
-       // }
+        }
       }
     };
     svg.on('click', function (evt) {
@@ -1110,6 +1060,59 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     );
   }
 
+  /**
+   * Determins if a colliding point should start line drawing or be removed.
+   */
+  handleLineOrRemove(epoint) {
+    if (epoint.isValid) {
+      if (this.dataLineDrawingEnabled) {
+        // if drawing enabled
+        const correctPoints = this.points.filter((p) => p.isValid);
+        if (correctPoints.length >= 2) {
+          // if more than 1 valid point
+          // if point already in line definition
+          const inline = this.line_points.some((point) =>
+            point.at(epoint.x, epoint.y)
+          );
+          if (inline) {
+            // Remove point from line definition if already in line.
+            // Effectively stops line drawing.
+            this.line_points = this.line_points.filter(
+              (p) => !p.at(epoint.x, epoint.y)
+            );
+            this.drawCursorLine([]);
+            this.drawLine();
+          } else {
+            this.line_points.push(epoint);
+            if (this.line_points.length >= 2) {
+              const line = new Line(...this.line_points);
+              this.line_points = [];
+              if (!this.lines.some((l) => l.equals(line))) {
+                this.lines.push(line);
+                this.setAction('AddLine');
+                this.setInput(JSON.stringify(line.toJSON()));
+                this.processAction();
+              }
+              this.drawCursorLine([]);
+              this.drawLine();
+            }
+          }
+        } else {
+          // "throw" error
+          this.setAction('grapherError');
+          this.setInput('curveNeedsMorePoints');
+          this.processAction(false, true);
+        }
+      }
+    } else {
+      this.removePoint(epoint.x, epoint.y);
+      this._tooltip.transition().duration(200).style('opacity', 0);
+      this.setAction('RemovePoint');
+      this.setInput(JSON.stringify(epoint.toJSON()));
+      this.processAction(false, true);
+    }
+  }
+
   /** Render the points in the chart. */
   drawPoints() {
     if (this.chart === null) {
@@ -1129,8 +1132,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const bx = (p) => bounded(p.x, this._x);
     const by = (p) => bounded(p.y, this._y);
     const transform = (d) =>
-          `rotate(${dir(d)}, ${bx(d)}, ${by(d)}) translate(${bx(d)}, ${by(d)})`;
-    const ctc = this;
+      `rotate(${dir(d)}, ${bx(d)}, ${by(d)}) translate(${bx(d)}, ${by(d)})`;
     this.chart
       .selectAll('.CTATChartPoint')
       .data(this.points)
@@ -1172,59 +1174,12 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
             .on('mouseleave', () =>
               tooltip.transition().duration(200).style('opacity', 0)
             )
-          .on('click', (event, epoint) => {
-            event.stopPropagation();
-            console.log(this);
-            console.log(event);
-            console.log(epoint);
-            if (epoint.isValid) {
-            if (this.dataLineDrawingEnabled) {
-              // if drawing enabled
-              const correctPoints = this.points.filter((p) => p.isValid);
-              if (correctPoints.length >= 2) {
-                // if more than 1 valid point
-                // if point already in line definition
-                const inline = this.line_points.some((point) =>
-                  point.at(epoint.x, epoint.y)
-                );
-                if (inline) {
-                  // Remove point from line definition if already in line.
-                  // Effectively stops line drawing.
-                  this.line_points = this.line_points.filter(
-                    (p) => !p.at(epoint.x, epoint.y)
-                  );
-                  this.drawCursorLine([]);
-                  this.drawLine();
-                } else {
-                  this.line_points.push(epoint);
-                  if (this.line_points.length >= 2) {
-                    const line = new Line(...this.line_points);
-                    this.line_points = [];
-                    if (!this.lines.some((l) => l.equals(line))) {
-                      this.lines.push(line);
-                      this.setAction('AddLine');
-                      this.setInput(JSON.stringify(line.toJSON()));
-                      this.processAction();
-                    }
-                    this.drawCursorLine([]);
-                    this.drawLine();
-                  }
-                }
-              } else {
-                // "throw" error
-                this.setAction('grapherError');
-                this.setInput('curveNeedsMorePoints');
-                this.processAction(false, true);
+            .on('click', (event, epoint) => {
+              event.stopPropagation();
+              if (this.getEnabled()) {
+                this.handleLineOrRemove(epoint);
               }
-            }
-          } else {
-            this.removePoint(epoint.x, epoint.y);
-            this._tooltip.transition().duration(200).style('opacity', 0);
-            this.setAction('RemovePoint');
-            this.setInput(JSON.stringify(epoint.toJSON()));
-            this.processAction(false, true);
-          }
-          }),
+            }),
         (update) =>
           update
             .attr(
@@ -1434,7 +1389,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    * @param equation: string[] - strings are of the form Point.toJSON()
    */
   AddLine(equation) {
-    console.log(equation);
     const line = new Line(
       ...JSON.parse(equation).map((p) => new Point(p.x, p.y))
     );
@@ -1557,7 +1511,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const action = aSAI.getAction();
     switch (action) {
       case 'AddPoint': {
-        //console.log(aSAI.getInput());
         const point = Point.fromJSON(aSAI.getInput());
         const last_point = this.points[this.points.length - 1];
         last_point.state = STATE.CORRECT;
@@ -1569,7 +1522,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
         break;
       }
       case 'AddLine':
-        //console.log(aSAI.getInput());
         //const line = new Line(...JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y)));
         //line.state = STATE.CORRECT;
         //this.lines = this.lines.filter(l => l.equals(line));
