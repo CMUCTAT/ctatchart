@@ -1017,6 +1017,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     };
     svg.on('click', function (evt) {
       const coords = d3.pointer(evt);
+      console.log(coords);
       add_point(coords[0], coords[1]);
     });
 
@@ -1113,6 +1114,39 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     }
   }
 
+  /** Renders points for tooltip */
+  scalePointStr(point) {
+    // try to approximate appropriate scale by looking at the size of "1 pixel"
+    const scale_x = Math.min(
+      1,
+      Math.abs(this._x.invert(1) - this._x.invert(0))
+    );
+    const scale_y = Math.min(
+      1,
+      Math.abs(this._y.invert(1) - this._y.invert(0))
+    );
+    // calculate the minimum number of decimal places it take to represent 1px
+    let px = 0,
+      py = 0;
+    // 100 max as that is the limits of what javascripts toFixed can handle.
+    while (Math.round(scale_x * 10 ** px) < 1 && px < 100) {
+      px++;
+    }
+    while (Math.round(scale_y * 10 ** py) < 1 && py < 100) {
+      py++;
+    }
+    // If locale settings cause problems, the quick fix would be to change
+    // undefined to 'en' or change point representation to not use ,
+    const x = point.x.toLocaleString(undefined, {
+      useGrouping: false,
+      maximumFractionDigits: px,
+    });
+    const y = point.y.toLocaleString(undefined, {
+      useGrouping: false,
+      maximumFractionDigits: py,
+    });
+    return `(${x},${y})`;
+  }
   /** Render the points in the chart. */
   drawPoints() {
     if (this.chart === null) {
@@ -1167,7 +1201,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
             )
             .on('mousemove', (e, d) =>
               tooltip
-                .html(d.toString())
+                .html(this.scalePointStr(d))
                 .style('left', `${e.pageX + d.r + 3}px`)
                 .style('top', `${e.pageY - d.r - 12}px`)
             )
