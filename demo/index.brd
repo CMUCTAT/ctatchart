@@ -1174,7 +1174,7 @@
             </message>
             <buggyMessage>No, this is not correct.</buggyMessage>
             <successMessage></successMessage>
-            <hintMessage>Please add a point at (5,5) in the highlighted chart.</hintMessage>
+            <hintMessage>Please add a point at (7,6) in the highlighted chart.</hintMessage>
             <callbackFn></callbackFn>
             <actionType>Correct Action</actionType>
             <oldActionType>Correct Action</oldActionType>

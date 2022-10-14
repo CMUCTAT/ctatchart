@@ -1,6 +1,6 @@
 {
   "name": "@RingenbergCTAT/ctatchart",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "CTAT component for interacting with two dimensional charts.",
   "private": false,
   "browserslist": "> 0.5%, last 2 versions, not dead",
@@ -40,23 +40,23 @@
   ],
   "dependencies": {
     "d3": "^7.6.1",
-    "jquery": "^3.6.0"
+    "jquery": "^3.6.1"
   },
   "devDependencies": {
-    "@babel/compat-data": "^7.18.8",
-    "@parcel/config-default": "^2.6.2",
-    "@parcel/transformer-raw": "^2.6.2",
-    "ava": "^4.3.1",
+    "@babel/compat-data": "^7.19.4",
+    "@parcel/config-default": "^2.7.0",
+    "@parcel/transformer-raw": "^2.7.0",
+    "ava": "^4.3.3",
     "browser-env": "^3.3.0",
     "css-loader": "^6.7.1",
-    "deasync": "^0.1.27",
-    "eslint": "^8.19.0",
+    "deasync": "^0.1.28",
+    "eslint": "^8.25.0",
     "eslint-config-prettier": "^8.5.0",
     "npm-run-all": "^4.1.5",
-    "parcel": "^2.6.2",
+    "parcel": "^2.7.0",
     "prettier": "^2.7.1",
     "style-loader": "^3.3.1",
-    "webpack": "^5.73.0",
+    "webpack": "^5.74.0",
     "webpack-cli": "^4.10.0"
   },
   "publishConfig": {
