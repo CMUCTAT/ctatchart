@@ -380,7 +380,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       vy = this.lines
         .map((l) => l.project(vx))
         .reduce((m, cur) => (Math.abs(cur - vy) < Math.abs(m - vy) ? cur : m));
-      //vy = this.equation(vx);
     }
     return new Point(vx, vy);
   }
@@ -837,29 +836,11 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .call((g) => g.selectAll('.domain').remove());
     this._xAxis
       .transition(transition)
-      //.call(g => g.attr('transform', `translate(0,${this._y(0)})`))
       .call(this._xAxisCall.scale(this._x).tickValues(ticks));
     const x = bounded(0, this._x);
     this._yAxis
       .transition(transition)
       .call((g) => g.attr('transform', `translate(${x},0)`));
-    /*this._xAxisGrid.selectAll('CTATChart--0axis')
-      .data([0])
-      .join(
-        enter => enter.append('line').classed('CTATChart--0axis', true)
-          .attr('stroke-width', 5).attr('stroke', 'pink')
-          .attr('x1', d=>this._x(d))
-          .attr('x2', d=>this._x(d))
-          .attr('y1', -height+this.margin.top+this.margin.bottom)
-          .attr('y2', 0),
-        update => update.call(
-          up => up
-            .transition().duration(500)
-            .attr('x1', d=>this._x(d))
-            .attr('x2', d=>this._x(d))
-            .attr('y1', -height+this.margin.top+this.margin.bottom)
-            .attr('y2', 0)),
-        exit => exit.remove());*/
   }
   /** Render the y axis. */
   drawAxisY() {
@@ -879,9 +860,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .reverse()
       .concat(d3.range(0, this.dataMaximumY + delta, delta))
       .filter((v) => v <= this.dataMaximumY && v >= this.dataMinimumY);
-    //const ticks = d3.range(this.dataMinimumY,
-    //                       this.dataMaximumY + 1,
-    //                       this.dataStepY);
     this._yAxisGrid
       .transition(transition)
       .call(
@@ -1008,17 +986,22 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           const epoint = this.points.find((p) => p.at(point.x, point.y));
           this.handleLineOrRemove(epoint);
         } else {
-          // this.addPoint(point.x, point.y); // Proposed fix for #1
           this.setAction('AddPoint');
           this.setInput(JSON.stringify(point.toJSON()));
           this.processAction();
+          return point;
         }
       }
     };
-    svg.on('click', function (evt) {
+    svg.on('click', (evt) => {
       const coords = d3.pointer(evt);
-      console.log(coords);
-      add_point(coords[0], coords[1]);
+      const point = add_point(coords[0], coords[1]);
+      if (point) {
+        this._tooltip
+          .html(this.scalePointStr(point))
+          .style('left', `${evt.pageX + point.r + 3}px`)
+          .style('top', `${evt.pageY - point.r - 12}px`);
+      }
     });
 
     // Add listener for controller events.
@@ -1035,9 +1018,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    * Generate the representation of the line.
    * @returns :string[] - list of Points.toJSON() strings
    */
-  /* getEquation() {
-    return this.line_points;
-  } */
 
   /** Update the current SAI. (clobbers super.updateSAI()) */
   _updateSAI() {
@@ -1196,8 +1176,14 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
                 : triangle()
             )
             .attr('transform', transform)
-            .on('mouseover', () =>
-              tooltip.transition().duration(200).style('opacity', 1)
+            .on('mouseover', (e, d) =>
+              tooltip
+                .html(this.scalePointStr(d))
+                .style('left', `${e.pageX + d.r + 3}px`)
+                .style('top', `${e.pageY - d.r - 12}px`)
+                .transition()
+                .duration(200)
+                .style('opacity', 1)
             )
             .on('mousemove', (e, d) =>
               tooltip
@@ -1556,10 +1542,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
         break;
       }
       case 'AddLine':
-        //const line = new Line(...JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y)));
-        //line.state = STATE.CORRECT;
-        //this.lines = this.lines.filter(l => l.equals(line));
-        //this.lines.push(line);
         // BRD appears to be eating Input
         // As the interface should be locked during grading we can probably
         // safely assume the grading event is for the last line added.
@@ -1617,15 +1599,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
         break;
       }
       case 'AddLine': {
-        //const line = new Line(
-        //  ...JSON.parse(aSAI.getInput()).map((p) => new Point(p.x, p.y))
-        //);
-        //line.state = STATE.INCORRECT;
-        //this.lines = this.lines.filter((l) => l.equals(line));
-        //this.lines.push(line);
         this.lines[this.lines.length - 1].state = STATE.INCORRECT;
-        //      this.line_points =
-        //  JSON.parse(aSAI.getInput()).map(p => new Point(p.x,p.y));
         this.drawLine();
         break;
       }
