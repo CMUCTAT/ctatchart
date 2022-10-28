@@ -337,6 +337,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     this._xAxisGridCall = d3.axisBottom();
     this._yAxisCall = d3.axisLeft();
     this._yAxisGridCall = d3.axisLeft();
+    this.pointGrading = false;
 
     // graphics
     this._xAxis = null;
@@ -979,28 +980,25 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       .attr('aria-label', 'Points in Chart');
     this.drawPoints();
     this.drawLine();
-    const add_point = (x, y) => {
+
+    // add_point
+    svg.on('click', (evt) => {
       if (this.getEnabled()) {
-        const point = this.getValueForPixel(x, y);
+        const coords = d3.pointer(evt);
+        const point = this.getValueForPixel(coords[0], coords[1]);
         if (this.isPoint(point.x, point.y)) {
           const epoint = this.points.find((p) => p.at(point.x, point.y));
           this.handleLineOrRemove(epoint);
         } else {
+          this.addPoint(point.x, point.y);
           this.setAction('AddPoint');
           this.setInput(JSON.stringify(point.toJSON()));
-          this.processAction();
-          return point;
+          this.pointGrading = this.processAction();
+          this._tooltip
+            .html(this.scalePointStr(point))
+            .style('left', `${evt.pageX + point.r + 3}px`)
+            .style('top', `${evt.pageY - point.r - 12}px`);
         }
-      }
-    };
-    svg.on('click', (evt) => {
-      const coords = d3.pointer(evt);
-      const point = add_point(coords[0], coords[1]);
-      if (point) {
-        this._tooltip
-          .html(this.scalePointStr(point))
-          .style('left', `${evt.pageX + point.r + 3}px`)
-          .style('top', `${evt.pageY - point.r - 12}px`);
       }
     });
 
@@ -1237,10 +1235,11 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     const enabled = this.getEnabled();
     this.setEnabled(false);
     const point = Point.fromJSON(json);
-    if (!this.isPoint(point.x, point.y)) {
+    if (!this.isPoint(point.x, point.y) && !this.pointGrading) {
       this.points.push(point);
       this.drawPoints();
     }
+    this.pointGrading = false; // FIXME would be more appropriate in show*
     this.setEnabled(enabled);
   }
   /** TPA
