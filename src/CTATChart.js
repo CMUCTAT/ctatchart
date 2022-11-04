@@ -376,7 +376,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       vx = this.closestXtick(vx);
       vy = this.closestYtick(vy);
     }
-    if (this.dataLineSnapping && this.lines.length > 1) {
+    if (this.dataLineSnapping && this.lines.length > 0) {
       // if line snapping, get closest projected value.
       vy = this.lines
         .map((l) => l.project(vx))
@@ -993,7 +993,8 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
           this.addPoint(point.x, point.y);
           this.setAction('AddPoint');
           this.setInput(JSON.stringify(point.toJSON()));
-          this.pointGrading = this.processAction();
+          this.pointGrading = true; // this.processAction is unreliable.
+          this.processAction();
           this._tooltip
             .html(this.scalePointStr(point))
             .style('left', `${evt.pageX + point.r + 3}px`)
@@ -1239,7 +1240,6 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
       this.points.push(point);
       this.drawPoints();
     }
-    this.pointGrading = false; // FIXME would be more appropriate in show*
     this.setEnabled(enabled);
   }
   /** TPA
@@ -1531,20 +1531,21 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     switch (action) {
       case 'AddPoint': {
         const point = Point.fromJSON(aSAI.getInput());
-        const last_point = this.points[this.points.length - 1];
+        const last_point = this.points.at(-1);
         last_point.state = STATE.CORRECT;
         last_point.x = point.x;
         last_point.y = point.y;
         this.points = this.points.filter((p) => !p.isIncorrect);
         this.drawPoints();
         this.drawLine();
+        this.pointGrading = false;
         break;
       }
       case 'AddLine':
         // BRD appears to be eating Input
         // As the interface should be locked during grading we can probably
         // safely assume the grading event is for the last line added.
-        this.lines[this.lines.length - 1].state = STATE.CORRECT;
+        this.lines.at(-1).state = STATE.CORRECT;
         this.drawLine();
         break;
 
@@ -1588,17 +1589,18 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     switch (action) {
       case 'AddPoint': {
         const point = Point.fromJSON(aSAI.getInput());
-        const last_point = this.points[this.points.length - 1];
+        const last_point = this.points.at(-1);
         last_point.state = STATE.UNGRADED;
         last_point.x = point.x;
         last_point.y = point.y;
         this.points = this.points.filter((p) => !p.isIncorrect);
         last_point.state = STATE.INCORRECT;
         this.drawPoints();
+        this.pointGrading = false;
         break;
       }
       case 'AddLine': {
-        this.lines[this.lines.length - 1].state = STATE.INCORRECT;
+        this.lines.at(-1).state = STATE.INCORRECT;
         this.drawLine();
         break;
       }
