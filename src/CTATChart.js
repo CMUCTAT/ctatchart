@@ -37,7 +37,7 @@
 /*global CTAT CTATGlobalFunctions CTATSAI CTATConfiguration:true*/
 import * as d3 from 'd3';
 import $ from 'jquery';
-import './CTATChart.css';
+// import './CTATChart.css';
 
 /**
  * Find the item in the array with the closest value to the one given.
@@ -324,7 +324,7 @@ const customSymbolX = {
 export default class CTATChart extends CTAT.Component.Base.Tutorable {
   constructor() {
     super('CTATChart', 'TwoDimensionChart');
-    this.margin = { top: 10, right: 10, bottom: 30, left: 30 };
+    this.margin = { top: 10, right: 20, bottom: 30, left: 40 };
 
     // data
     this.points = []; // : Point[]
@@ -417,7 +417,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
    */
   get dataLineSnapping() {
     const snap = this.getDivWrap().getAttribute('data-ctat-line-snap');
-    return snap ? CTATGlobalFunctions.stringToBoolean(snap) : true;
+    return snap ? CTATGlobalFunctions.stringToBoolean(snap) : false;
   }
   set dataLineSnapping(val) {
     this.getDivWrap().setAttribute('data-ctat-line-snap', `${val}`);
@@ -694,7 +694,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   ChangeUpperVerticalBoundary(value) {
     const enabled = this.getEnabled();
     this.setEnabled(false);
-    this.setMaximumX(value);
+    this.setMaximumY(value);
     this.setEnabled(enabled);
   }
   /**
@@ -737,7 +737,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   ChangeHorizontalInterval(value) {
     const enabled = this.getEnabled();
     this.setEnabled(false);
-    this.setMaximumX(value);
+    this.setStepX(value);
     this.setEnabled(enabled);
   }
   /**
@@ -774,7 +774,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
   ChangeVerticalInterval(value) {
     const enabled = this.getEnabled();
     this.setEnabled(false);
-    this.setMaximumX(value);
+    this.setStepY(value);
     this.setEnabled(enabled);
   }
   /**
