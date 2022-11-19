@@ -38,7 +38,7 @@ Load the CTATChart.js file in the html header of a CTAT html tutor after
 
 [CTATChart](./doc/CTATChart.md)
 
-[CTATChart Examples](https://ringenbergctat.gitlab.io/ctatchart/)
+[CTATChart Examples](https://cmuctat.github.io/ctatchart/demo/)
 
 #  For Advanced Tutor Development
 
