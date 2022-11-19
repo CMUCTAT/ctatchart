@@ -44,8 +44,10 @@ Load the CTATChart.js file in the html header of a CTAT html tutor after
 
 ## Local Installation
 
-To install this library using npm:
-`npm install --save gitlab:RingenbergCTAT/ctatchart`
+To install this library using npm, using your Github username and personal access token:
+```
+  npm install git+https://username:accesstoken@github.com/CMUCTAT/CTATChart
+```
 
 ## Usage
 
@@ -54,12 +56,12 @@ compiling from source.
 Add the following to the custom javascript file:
 `export { default as CTATChart } from 'ctatchart';`
 As `CTATChart` registers itself with CTAT, exporting is not strictly necessary,
-but when used with building tools that does tree shaking, exporting it will make
+but when used with building tools that perform tree shaking, exporting it will make
 sure that it is included.
 
 # Thanks
 
-Developement is supported by
+Development is supported by
 [Carnegie Mellon University](https://www.cmu.edu/)'s
 [Simon Initiative](https://www.cmu.edu/simon/)
-and [CTAT](http://ctat.pact.cs.cmu.edu/).
+and [CTAT](https://github.com/CMUCTAT/CTAT/wiki).
