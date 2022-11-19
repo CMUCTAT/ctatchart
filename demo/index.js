@@ -1,11 +1,7 @@
-import $ from 'jquery';
-window.$ = $;
-import brd from './index.brd';
-
 export { default as CTATChart } from '../src/CTATChart';
 window.CTATTarget = 'Default';
 
-$(() => {
+window.$(() => {
   if (
     typeof CTATLMS.is.ToolsListener == 'function' &&
     CTATLMS.is.ToolsListener()
@@ -57,7 +53,7 @@ $(() => {
   }
 
   window.initTutor({
-    question_file: brd,
+    question_file: './index.brd',
     tutoring_service_communication: 'javascript',
   });
 });
