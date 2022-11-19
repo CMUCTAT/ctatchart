@@ -48,7 +48,7 @@
     "@parcel/transformer-raw": "^2.7.0",
     "ava": "^5.0.1",
     "browser-env": "^3.3.0",
-    "css-loader": "^6.7.1",
+    "css-loader": "^6.7.2",
     "deasync": "^0.1.28",
     "eslint": "^8.26.0",
     "eslint-config-prettier": "^8.5.0",
