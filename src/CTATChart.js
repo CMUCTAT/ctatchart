@@ -1474,6 +1474,7 @@ export default class CTATChart extends CTAT.Component.Base.Tutorable {
     if (!evt.detail.sai) {
       return;
     } // abort if no sai
+    this.logger?.log("chart", "handleAction() sai", evt.detail.sai.toString(), "component", evt.detail.component);
     const ctrl_name = controller_name(evt.detail.component, this);
     // abort if invalid component
     if (!ctrl_name || ctrl_name == this.getName()) {
